@@ -5,7 +5,7 @@ var camera, scene, renderer, material
 var scale;
 
 var foundation, base, tower, roof, pivot, leftRod, rightRod, topRod, bottomRod, 
-    leftSail, rightSail, topSail, bottomSail, doorRectangle, doorSemicircle;
+    leftSail, rightSail, topSail, bottomSail, doorRectangle, doorSemicircle, skylight;
 
 var clock, delta;
 
@@ -36,6 +36,24 @@ function createDoor(x, y, z) {
     doorSemicircle.rotateZ(Math.PI/2);
 
     scene.add(doorSemicircle);
+}
+
+function createSkylight(x, y, z) {
+    'use strict';
+
+    skylight = new THREE.Object3D();
+
+    material = new THREE.MeshBasicMaterial({ color: 0x615750, wireframe: wireframeFlag });
+    let geometry = new THREE.BoxGeometry(Math.sqrt(2) * scale, Math.sqrt(2) * scale, 0.1 * scale);
+    let mesh = new THREE.Mesh(geometry, material);
+
+    skylight.add(mesh);
+    skylight.position.set(x, y, z);
+
+    skylight.rotateY(Math.PI/2);
+    skylight.rotateZ(Math.PI/4);
+
+    scene.add(skylight);
 }
 
 function createVerticalSail(sail, x, y, z) {
@@ -209,6 +227,7 @@ function createScene() {
     createVerticalSail(topSail, 3.5 * scale, 25 * scale, 0.75 * scale);
     createVerticalSail(bottomSail, 3.5 * scale, 18 * scale, -0.75 * scale);
     createDoor(3.25 * scale, 10.5 * scale, 0 * scale);
+    createSkylight(3 * scale, 15 * scale, 0 * scale);
 }
 
 function onResize() {
