@@ -20,6 +20,8 @@ const leftFlag = 0, rightFlag = 1, topFlag = 0, bottomFlag = 1;
 
 const sailRotationLimit = Math.PI / 4;
 
+const movingFactor = 5, rotationFactor = 1;
+
 const scale = 1.5;
 
 function createHorizontalSail(object, flag) {
@@ -210,31 +212,31 @@ function createScene() {
     scene.add(new THREE.AxisHelper(10));
 
     leftSail = new THREE.Object3D();
-    leftSail.userData = {rotating: false, limit: sailRotationLimit, incrementFactor: 1, angleZ: 0};
+    leftSail.userData = {rotating: false, limit: sailRotationLimit, incrementFactor: rotationFactor, angleZ: 0};
     createHorizontalSail(leftSail, leftFlag);
     leftRod = new THREE.Object3D();
     createHorizontalRod(leftRod, leftFlag);
 
     rightSail = new THREE.Object3D();
-    rightSail.userData = {rotating: false, limit: sailRotationLimit, incrementFactor: 1, angleZ: 0};
+    rightSail.userData = {rotating: false, limit: sailRotationLimit, incrementFactor: rotationFactor, angleZ: 0};
     createHorizontalSail(rightSail, rightFlag);
     rightRod = new THREE.Object3D();
     createHorizontalRod(rightRod, rightFlag);
     
     topSail = new THREE.Object3D();
-    topSail.userData = {rotating: false, limit: sailRotationLimit, incrementFactor: 1, angleY: 0};
+    topSail.userData = {rotating: false, limit: sailRotationLimit, incrementFactor: rotationFactor, angleY: 0};
     createVerticalSail(topSail, topFlag);
     topRod = new THREE.Object3D();
     createVerticalRod(topRod, topFlag);
 
     bottomSail = new THREE.Object3D();
-    bottomSail.userData = {rotating: false, limit: sailRotationLimit, incrementFactor: 1, angleY: 0};
+    bottomSail.userData = {rotating: false, limit: sailRotationLimit, incrementFactor: rotationFactor, angleY: 0};
     createVerticalSail(bottomSail, bottomFlag);
     bottomRod = new THREE.Object3D();
     createVerticalRod(bottomRod, bottomFlag);
 
     pivot = new THREE.Object3D();
-    pivot.userData = {rotating: false, incrementFactor: 1};
+    pivot.userData = {rotating: false, incrementFactor: rotationFactor};
     createPivot(pivot);
 
     tower = new THREE.Object3D();
@@ -246,11 +248,11 @@ function createScene() {
     createDoor(openings);
 
     base = new THREE.Object3D();
-    base.userData = {rotating: false, incrementFactor: 1};
+    base.userData = {rotating: false, incrementFactor: rotationFactor};
     createBase(base);
 
     foundation = new THREE.Object3D();
-    foundation.userData = {movingX: false, movingY: false, movingZ: false};
+    foundation.userData = {movingX: false, movingY: false, movingZ: false, incrementFactorX: movingFactor, incrementFactorY: movingFactor, incrementFactorZ: movingFactor};
     createFoundation(foundation);
 
     scene.add(foundation);
@@ -319,75 +321,108 @@ function onKeyDown(e) {
         case 113: // q, Rotate Base Positively
             if (base.userData.rotating == false) {
                 base.userData.rotating = true;
-                base.userData.incrementFactor = 1;
+                base.userData.incrementFactor = rotationFactor;
             }
             break;
         case 87: // W
         case 119: // w, Rotate Base Negatively
             if (base.userData.rotating == false) {
                 base.userData.rotating = true;
-                base.userData.incrementFactor = -1;
+                base.userData.incrementFactor = -rotationFactor;
             }
             break;
         case 65: // A
         case 97: // a, Rotate Pivot Positively
             if (pivot.userData.rotating == false) {
                 pivot.userData.rotating = true;
-                pivot.userData.incrementFactor = 1;
+                pivot.userData.incrementFactor = rotationFactor;
             }
             break;
         case 83: // S
         case 115: // s, Rotate Pivot Negatively
             if (pivot.userData.rotating == false) {
                 pivot.userData.rotating = true;
-                pivot.userData.incrementFactor = -1;
+                pivot.userData.incrementFactor = -rotationFactor;
             }
             break;
         case 90: // Z
         case 122: // z, Rotate Sails Starting Positively
             if (leftSail.userData.rotating == false) {
                 leftSail.userData.rotating = true;
-                leftSail.userData.incrementFactor = 1;
+                leftSail.userData.incrementFactor = rotationFactor;
             }
             if (rightSail.userData.rotating == false) {
                 rightSail.userData.rotating = true;
-                rightSail.userData.incrementFactor = -1;
+                rightSail.userData.incrementFactor = -rotationFactor;
             }
             if (topSail.userData.rotating == false) {
                 topSail.userData.rotating = true;
-                topSail.userData.incrementFactor = -1;
+                topSail.userData.incrementFactor = -rotationFactor;
             }
             if (bottomSail.userData.rotating == false) {
                 bottomSail.userData.rotating = true;
-                bottomSail.userData.incrementFactor = 1;
+                bottomSail.userData.incrementFactor = rotationFactor;
             }
             break;
         case 88: // X
         case 120: // x, Rotate Sails Starting Negatively
             if (leftSail.userData.rotating == false) {
                 leftSail.userData.rotating = true;
-                leftSail.userData.incrementFactor = -1;
+                leftSail.userData.incrementFactor = -rotationFactor;
             }
             if (rightSail.userData.rotating == false) {
                 rightSail.userData.rotating = true;
-                rightSail.userData.incrementFactor = 1;
+                rightSail.userData.incrementFactor = rotationFactor;
             }
             if (topSail.userData.rotating == false) {
                 topSail.userData.rotating = true;
-                topSail.userData.incrementFactor = 1;
+                topSail.userData.incrementFactor = rotationFactor;
             }
             if (bottomSail.userData.rotating == false) {
                 bottomSail.userData.rotating = true;
-                bottomSail.userData.incrementFactor = -1;
+                bottomSail.userData.incrementFactor = -rotationFactor;
             }
             break;
-
+        
+        case 39: // right arrow
+            if (foundation.userData.movingX == false) {
+                foundation.userData.movingX = true;
+                foundation.userData.incrementFactorX = movingFactor;
+            }
+            break;
+        case 37: // left arrow
+            if (foundation.userData.movingX == false) {
+                foundation.userData.movingX = true;
+                foundation.userData.incrementFactorX = -movingFactor;
+            }
+            break;
+        case 38: //up arrow
+            if (foundation.userData.movingY == false) {
+                foundation.userData.movingY  = true;
+                foundation.userData.incrementFactorY = movingFactor;
+            }
+            break;
+        case 40: //down arrow
+            if (foundation.userData.movingY  == false) {
+                foundation.userData.movingY = true;
+                foundation.userData.incrementFactorY = -movingFactor;
+            }
+            break;
         case 68: //D
         case 100: //d, Move Articulated Object on Z Axis
+            if (foundation.userData.movingZ  == false) {
+                foundation.userData.movingZ = true;
+                foundation.userData.incrementFactorZ = movingFactor;
+            }
             break;
         case 67: //C
         case 99: //c, Move Articulated Object on Z Axis
+            if (foundation.userData.movingZ  == false) {
+                foundation.userData.movingZ = true;
+                foundation.userData.incrementFactorZ = -movingFactor;
+            }
             break;
+
     }
 }
 
@@ -415,6 +450,21 @@ function onKeyUp(e) {
             rightSail.userData.rotating = false;
             topSail.userData.rotating = false;
             bottomSail.userData.rotating = false;
+            break;
+            
+        case 39: // right arrow
+        case 37: // left arrow
+            foundation.userData.movingX = false;
+            break;
+        case 38: //up arrow
+        case 40: //down arrow
+            foundation.userData.movingY  = false;
+            break;
+        case 68: //D
+        case 100: //d
+        case 67: //C
+        case 99: //c
+            foundation.userData.movingZ  = false;
             break;
     }
 }
@@ -481,6 +531,21 @@ function animate() {
     if (base.userData.rotating) {
         let step = base.userData.incrementFactor * delta;
         base.rotateY(step);
+    }
+
+    if (foundation.userData.movingX) {
+        let step = foundation.userData.incrementFactorX * delta;
+        foundation.translateX(step);
+    }
+
+    if (foundation.userData.movingY) {
+        let step = foundation.userData.incrementFactorY * delta;
+        foundation.translateY(step);
+    }
+
+    if (foundation.userData.movingZ) {
+        let step = foundation.userData.incrementFactorZ * delta;
+        foundation.translateZ(step);
     }
 
     render();
