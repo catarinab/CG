@@ -30,7 +30,7 @@ function createHorizontalSail(object, flag) {
     material = new THREE.MeshBasicMaterial({ color: 0xfaecd8, wireframe: true });
     let geometry = new THREE.BoxGeometry(sailWidth * scale, sailHeight * scale, sailLength * scale);
     let mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(0, Math.pow(-1, flag) * ((rodHeight + sailHeight / 2) - rodHeight / 2) * scale, 0);
+    mesh.position.set(0, Math.pow(-1, flag) * (rodHeight / 2 + sailHeight / 2) * scale, 0);
 
     object.add(mesh);
 }
@@ -41,7 +41,7 @@ function createVerticalSail(object, flag) {
     material = new THREE.MeshBasicMaterial({ color: 0xfaecd8, wireframe: true });
     let geometry = new THREE.BoxGeometry(sailWidth * scale, sailLength * scale, sailHeight * scale);
     let mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(0, 0, Math.pow(-1, flag) * ((rodHeight + sailHeight / 2) - rodHeight / 2) * scale);
+    mesh.position.set(0, 0, Math.pow(-1, flag) * (rodHeight / 2 + sailHeight / 2) * scale);
 
     object.add(mesh);
 }
@@ -98,7 +98,7 @@ function createPivot(object) {
     mesh.position.set(0, 0, 0);
 
     object.add(mesh);
-    object.position.set((towerWidth / 2 + pivotWidth / 2) * scale, ((12 + pivotHeight / 2) - towerHeight / 2) * scale, 0);
+    object.position.set((towerWidth / 2 + pivotWidth / 2) * scale, (12 - towerHeight / 2 + pivotHeight / 2) * scale, 0);
 }
 
 function createRoof(object) {
@@ -108,7 +108,7 @@ function createRoof(object) {
     let geometry = new THREE.CylinderGeometry(0.1 * scale, (Math.sqrt(2 * towerWidth * towerLength) / 2) * scale, roofHeight * scale, 4);
     let mesh = new THREE.Mesh(geometry, material);
     mesh.rotateY(Math.PI/4);
-    mesh.position.set(0, ((towerHeight + roofHeight / 2) - towerHeight / 2) * scale, 0);
+    mesh.position.set(0, (towerHeight / 2 + roofHeight / 2) * scale, 0);
 
     object.add(mesh);
 }
@@ -124,7 +124,20 @@ function createTower(object) {
     mesh.position.set(0, 0, 0);
 
     object.add(mesh);
-    object.position.set(0, ((baseHeight + towerHeight / 2) - baseHeight / 2) * scale, 0);
+    object.position.set(0, (baseHeight / 2 + towerHeight / 2) * scale, 0);
+}
+
+function createSkylight(object) {
+    'use strict';
+
+    material = new THREE.MeshBasicMaterial({ color: 0x615750, wireframe: true });
+    let geometry = new THREE.BoxGeometry(Math.sqrt(skylightHeight) * scale, Math.sqrt(skylightHeight) * scale, skylightWidth * scale);
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.rotateY(Math.PI/2);
+    mesh.rotateZ(Math.PI/4);
+    mesh.position.set(0, (1 + doorHeight / 2 + skylightHeight / 2) * scale, 0);
+
+    object.add(mesh);
 }
 
 function createDoor(object) {
@@ -143,20 +156,7 @@ function createDoor(object) {
 
     object.add(meshRectangle);
     object.add(meshSemicircle);
-    object.position.set((towerWidth / 2 + doorWidth / 2) * scale, ((baseHeight + doorHeight / 2) - baseHeight / 2) * scale, 0);
-}
-
-function createSkylight(object) {
-    'use strict';
-
-    material = new THREE.MeshBasicMaterial({ color: 0x615750, wireframe: true });
-    let geometry = new THREE.BoxGeometry(Math.sqrt(skylightHeight) * scale, Math.sqrt(skylightHeight) * scale, skylightWidth * scale);
-    let mesh = new THREE.Mesh(geometry, material);
-    mesh.rotateY(Math.PI/2);
-    mesh.rotateZ(Math.PI/4);
-    mesh.position.set(0, ((doorHeight + 1 + skylightHeight / 2) - doorHeight / 2) * scale, 0);
-
-    object.add(mesh);
+    object.position.set((towerWidth / 2 + doorWidth / 2) * scale, (baseHeight / 2 + doorHeight / 2) * scale, 0);
 }
 
 function createBase(object) {
@@ -171,7 +171,7 @@ function createBase(object) {
     mesh.position.set(0, 0, 0);
 
     object.add(mesh);
-    object.position.set(0, ((foundationHeight + baseHeight / 2) - foundationHeight / 2) * scale, 0);
+    object.position.set(0, (foundationHeight / 2 + baseHeight / 2) * scale, 0);
 }
 
 function createFoundation(object) {
@@ -384,39 +384,39 @@ function onKeyDown(e) {
             }
             break;
         
-        case 39: // right arrow
+        case 39: // right arrow, Move Articulated Object on X Axis Positively 
             if (foundation.userData.movingX == false) {
                 foundation.userData.movingX = true;
                 foundation.userData.incrementFactorX = movingFactor;
             }
             break;
-        case 37: // left arrow
+        case 37: // left arrow, Move Articulated Object on X Axis Negatively
             if (foundation.userData.movingX == false) {
                 foundation.userData.movingX = true;
                 foundation.userData.incrementFactorX = -movingFactor;
             }
             break;
-        case 38: //up arrow
+        case 38: //up arrow, Move Articulated Object on Y Axis Positively
             if (foundation.userData.movingY == false) {
                 foundation.userData.movingY  = true;
                 foundation.userData.incrementFactorY = movingFactor;
             }
             break;
-        case 40: //down arrow
+        case 40: //down arrow, Move Articulated Object on Y Axis Negatively
             if (foundation.userData.movingY  == false) {
                 foundation.userData.movingY = true;
                 foundation.userData.incrementFactorY = -movingFactor;
             }
             break;
         case 68: //D
-        case 100: //d, Move Articulated Object on Z Axis
+        case 100: //d, Move Articulated Object on Z Axis Positively
             if (foundation.userData.movingZ  == false) {
                 foundation.userData.movingZ = true;
                 foundation.userData.incrementFactorZ = movingFactor;
             }
             break;
         case 67: //C
-        case 99: //c, Move Articulated Object on Z Axis
+        case 99: //c, Move Articulated Object on Z Axis Negatively
             if (foundation.userData.movingZ  == false) {
                 foundation.userData.movingZ = true;
                 foundation.userData.incrementFactorZ = -movingFactor;
@@ -478,6 +478,7 @@ function animate() {
     'use strict';
 
     delta = clock.getDelta();
+
     if (leftSail.userData.rotating) {
         if (leftSail.userData.limit <= leftSail.userData.angleZ) {
             leftSail.userData.incrementFactor = -1;
@@ -537,12 +538,10 @@ function animate() {
         let step = foundation.userData.incrementFactorX * delta;
         foundation.translateX(step);
     }
-
     if (foundation.userData.movingY) {
         let step = foundation.userData.incrementFactorY * delta;
         foundation.translateY(step);
     }
-
     if (foundation.userData.movingZ) {
         let step = foundation.userData.incrementFactorZ * delta;
         foundation.translateZ(step);
