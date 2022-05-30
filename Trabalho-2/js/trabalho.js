@@ -4,35 +4,126 @@ var perspCamera, orthoCamera, camera;
 
 var scene, renderer, material
 
-// objects
-// var ;
+// Objects
+var torus1, dodecahedron1, icosahedron1, octahedron1, sphere1, box1;
 
 var clock, delta;
 
-// object scales
+// Object Scales
 // const ;
 
 const movingFactor = 5, rotationFactor = 1;
 
 const scale = 1.5;
 
-// deixado para referencia
-/* function createPivot(object) { 
+function createTorus(object) {
     'use strict';
 
-    object.add(leftRod);
-    object.add(rightRod);
-    object.add(topRod);
-    object.add(bottomRod);
+    const radius = 0.45 * scale;
+    const tubeRadius = 0.2 * scale;
+    const radialSegments = 8;
+    const tubularSegments = 24;
 
     material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
-    let geometry = new THREE.BoxGeometry(pivotWidth * scale, pivotHeight * scale, pivotLength * scale);
+    let geometry = new THREE.TorusBufferGeometry(radius, tubeRadius, radialSegments, tubularSegments);
     let mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(0, 0, 0);
+    mesh.position.set(0 * scale, 0 * scale, 0 * scale);    
 
     object.add(mesh);
-    object.position.set((towerWidth / 2 + pivotWidth / 2) * scale, (12 - towerHeight / 2 + pivotHeight / 2) * scale, 0);
+    // object.position.set(0 * scale, 0 * scale, 0 * scale);
+}
+
+/* 
+function createCapsule(object) {
+    'use strict';
+
+    material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
+    let geometry = new THREE.CapsuleGeometry( 1, 1, 4, 8 );
+    let mesh = new THREE.Mesh(geometry, material);
+
+    mesh.position.set(0 * scale, 10 * scale, 0 * scale);    
+
+    object.add(mesh);
+    // object.position.set(0 * scale, 0 * scale, 0 * scale);
 } */
+
+function createDodecahedron(object) {
+    'use strict';
+
+    const radius = 0.45 * scale;
+
+    material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
+    let geometry = new THREE.DodecahedronBufferGeometry(radius);
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(0 * scale, 2 * scale, 0 * scale);    
+
+    object.add(mesh);
+    // object.position.set(0 * scale, 2 * scale, 0 * scale);
+}
+
+function createIcosahedron(object) {
+    'use strict';
+
+    const radius = 0.45 * scale;
+
+    material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
+    let geometry = new THREE.IcosahedronBufferGeometry(radius);
+    let mesh = new THREE.Mesh(geometry, material);
+
+    mesh.position.set(0 * scale, 4 * scale, 0 * scale);    
+
+    object.add(mesh);
+    // object.position.set(0 * scale, 0 * scale, 0 * scale);
+}
+
+function createOctahedron(object) {
+    'use strict';
+
+    const radius = 0.45 * scale;
+
+    material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
+    let geometry = new THREE.OctahedronBufferGeometry(radius);
+    let mesh = new THREE.Mesh(geometry, material);
+
+    mesh.position.set(0 * scale, 6 * scale, 0 * scale);    
+
+    object.add(mesh);
+    // object.position.set(0 * scale, 0 * scale, 0 * scale);
+}
+
+function createSphere(object) {
+    'use strict';
+
+    const radius = 0.45 * scale;
+    const widthSegments = 12;
+    const heightSegments = 8;
+
+    material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
+    let geometry = new THREE.SphereBufferGeometry(radius, widthSegments, heightSegments);
+    let mesh = new THREE.Mesh(geometry, material);
+
+    mesh.position.set(0 * scale, 8 * scale, 0 * scale);    
+
+    object.add(mesh);
+    // object.position.set(0 * scale, 0 * scale, 0 * scale);
+}
+
+function createBox(object) {
+    'use strict';
+
+    const width = 0.9 * scale;
+    const height = 0.9 * scale;
+    const depth = 0.9 * scale;
+
+    material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
+    let geometry = new THREE.BoxBufferGeometry(width, height, depth);
+    let mesh = new THREE.Mesh(geometry, material);
+
+    mesh.position.set(0 * scale, 10 * scale, 0 * scale);    
+
+    object.add(mesh);
+    // object.position.set(0 * scale, 0 * scale, 0 * scale);
+}
 
 function createCameras() {
     'use strict';
@@ -58,12 +149,35 @@ function createScene() {
 
     scene.add(new THREE.AxisHelper(10));
 
-    // deixado para referencia
-    /* pivot = new THREE.Object3D();
-    pivot.userData = {rotating: false, incrementFactor: rotationFactor};
-    createPivot(pivot); */
+    torus1 = new THREE.Object3D();
+    // torus1.userData = {rotating: false, incrementFactor: rotationFactor};
+    createTorus(torus1);
+    scene.add(torus1);
 
-    // scene.add(foundation);
+    dodecahedron1 = new THREE.Object3D();
+    // dodecahedron1.userData = {rotating: false, incrementFactor: rotationFactor};
+    createDodecahedron(dodecahedron1);
+    scene.add(dodecahedron1);
+
+    icosahedron1 = new THREE.Object3D();
+    // icosahedron1.userData = {rotating: false, incrementFactor: rotationFactor};
+    createIcosahedron(icosahedron1);
+    scene.add(icosahedron1);
+
+    octahedron1 = new THREE.Object3D();
+    // octahedron1.userData = {rotating: false, incrementFactor: rotationFactor};
+    createOctahedron(octahedron1);
+    scene.add(octahedron1);
+
+    sphere1 = new THREE.Object3D();
+    // sphere1.userData = {rotating: false, incrementFactor: rotationFactor};
+    createSphere(sphere1);
+    scene.add(sphere1);
+
+    box1 = new THREE.Object3D();
+    // box1.userData = {rotating: false, incrementFactor: rotationFactor};
+    createBox(box1);
+    scene.add(box1);
 }
 
 function onResize() {
@@ -91,7 +205,7 @@ function onKeyDown(e) {
 
     switch(e.keyCode) {
         // deixado para referencia
-        case 49: //1, Front Orthographic Camera
+        case 49: //1, Orthographic Camera
             camera = orthoCamera;
             camera.position.x = 30 * scale;
             camera.position.y = 0;
@@ -99,22 +213,12 @@ function onKeyDown(e) {
             camera.lookAt(scene.position);
             camera.position.y = 15 * scale;
             break;
-        case 50: //2, Side Orthographic Camera
-            camera = orthoCamera;
-            camera.position.x = 0;
-            camera.position.y = 30 * scale;
-            camera.position.z = 0;
-            camera.lookAt(scene.position);
-            camera.rotation.z = Math.PI / 2;
+        case 50: //2, Persp Fixed Camera
+            camera = perspCamera;
             break;
-        case 51: //3, Top Orthographic Camera
-            camera = orthoCamera;
-            camera.position.x = 0
-            camera.position.y = 0;
-            camera.position.z = -30 * scale;
-            camera.lookAt(scene.position);
-            camera.position.y = 15 * scale;
+        case 51: //3, Persp Moving Camera
             break;
+
         case 52: //4, Wireframe
             scene.traverse(function(node) {
                 if (node instanceof THREE.Mesh) {
@@ -122,28 +226,25 @@ function onKeyDown(e) {
                 }
             });
             break;
-        case 53: //5, PerspectiveCamera
-            camera = perspCamera;
-            break;
         
-        case 39: // right arrow, Move Articulated Object on X Axis Positively 
-            // deixado para referencia
+        case 39: // right arrow, Move Rocket Longitudinally
+            // Reference
             /* if (foundation.userData.movingX == false) {
                 foundation.userData.movingX = true;
                 foundation.userData.incrementFactorX = movingFactor;
             } */
             break;
-        case 37: // left arrow, Move Articulated Object on X Axis Negatively
+        case 37: // left arrow, Move Rocket Longitudinally
             /* if () {
                 ;
             } */
             break;
-        case 38: //up arrow, Move Articulated Object on Y Axis Positively
+        case 38: //up arrow, Move Rocket Latitudinally
             /* if () {
                 ;
             } */
             break;
-        case 40: //down arrow, Move Articulated Object on Y Axis Negatively
+        case 40: //down arrow, Move Rocket Latitudinally
             /* if () {
                 ;
             } */
