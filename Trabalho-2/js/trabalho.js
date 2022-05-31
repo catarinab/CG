@@ -7,92 +7,150 @@ var scene, renderer, material
 var clock, delta;
 
 // Objects
-var planet, dodecahedron1, icosahedron1, octahedron1, sphere1, box1;
+var planet, rocket, trash;
 
-const scale = 1;
-
-const movingFactor = 5, rotationFactor = 1;
+const scale = 1, rotationFactor = 1;
 
 // Objects Scales
 const planetRadius = 36, rocketWingspan = planetRadius / 12, trashWingspan = planetRadius / 20, objectOrbit = planetRadius * 1.2;
 
-function sphericalSet(object, radius, theta, phi) {
-    let x = radius * Math.cos(theta) * Math.sin(phi);
-    let z = radius * Math.sin(theta) * Math.sin(phi);
-    let y = radius * Math.cos(phi);
-    
-    object.position.set(x, y, z);
+class ObjectCollision extends THREE.Object3D {
+    //Constructor
+    constructor(radius) {
+        super();
+        
+        this.hitboxRadius = radius;
+
+        material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+        let geometry = new THREE.SphereGeometry(radius * scale, 30 * scale, 30 * scale);
+        let mesh = new THREE.Mesh(geometry, material);  
+        mesh.visible = false;
+        this.hitbox = mesh;
+
+        this.add(this.hitbox);
+    }
+
+    //Methods
+    hitboxVisible() {
+        this.hitbox.visible = !this.hitbox.visible;
+    }
+
+    sphericalSet(radius, theta, phi) {
+        let x = radius * Math.cos(theta) * Math.sin(phi);
+        let z = radius * Math.sin(theta) * Math.sin(phi);
+        let y = radius * Math.cos(phi);
+        
+        this.position.set(x, y, z);
+    }
+
+    collisionCheck(object) {
+        return this.hitboxRadius + object.hitboxRadius() < this.position.distanceTo(other.position);
+    }
 }
 
-function createDodecahedron(object) {
+function randomAngle() {
+    return Math.random() * 2 * Math.PI;
+}
+
+function createPlanet() {
+    'use strict';
+    
+    material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
+    let geometry = new THREE.SphereGeometry(planetRadius * scale, 30 * scale, 30 * scale);
+    let mesh = new THREE.Mesh(geometry, material); 
+    
+    planet = new THREE.Object3D();
+    planet.add(mesh);
+    planet.position.set(0, 0, 0);   
+    
+    scene.add(planet);
+}
+
+function createRocket() {}
+
+function createDodecahedron() {
     'use strict';
 
     material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
     let geometry = new THREE.DodecahedronBufferGeometry((trashWingspan / 2) * scale);
     let mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(0 * scale, 2 * scale, 0 * scale);    
 
-    object.add(mesh);
+    var dodecahedron = new ObjectCollision((trashWingspan / 2) * scale);
+    dodecahedron.add(mesh);
+    dodecahedron.sphericalSet(objectOrbit, randomAngle(), randomAngle());  
+    
+    trash.push(dodecahedron);
+    scene.add(dodecahedron);
 }
 
-function createIcosahedron(object) {
+function createIcosahedron() {
     'use strict';
 
     material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
     let geometry = new THREE.IcosahedronBufferGeometry((trashWingspan / 2) * scale);
     let mesh = new THREE.Mesh(geometry, material);
 
-    mesh.position.set(0 * scale, 4 * scale, 0 * scale);    
-
-    object.add(mesh);
+    var icosahedron = new ObjectCollision((trashWingspan / 2) * scale);
+    icosahedron.add(mesh);
+    icosahedron.sphericalSet(objectOrbit, randomAngle(), randomAngle());  
+    
+    trash.push(icosahedron);
+    scene.add(icosahedron);
 }
 
-function createOctahedron(object) {
+function createOctahedron() {
     'use strict';
 
     material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
     let geometry = new THREE.OctahedronBufferGeometry((trashWingspan / 2) * scale);
-    let mesh = new THREE.Mesh(geometry, material);
+    let mesh = new THREE.Mesh(geometry, material);;    
 
-    mesh.position.set(0 * scale, 6 * scale, 0 * scale);    
+    var octahedron = new ObjectCollision((trashWingspan / 2) * scale);
+    octahedron.add(mesh);
+    octahedron.sphericalSet(objectOrbit, randomAngle(), randomAngle());  
 
-    object.add(mesh);
+    trash.push(octahedron);
+    scene.add(octahedron);
 }
 
-function createSphere(object) {
+function createSphere() {
     'use strict';
 
     material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
     let geometry = new THREE.SphereBufferGeometry((trashWingspan / 2) * scale, 10 * scale, 10 * scale);
-    let mesh = new THREE.Mesh(geometry, material);
+    let mesh = new THREE.Mesh(geometry, material);   
 
-    mesh.position.set(0 * scale, 8 * scale, 0 * scale);    
+    var sphere = new ObjectCollision((trashWingspan / 2) * scale);
+    sphere.add(mesh);
+    sphere.sphericalSet(objectOrbit, randomAngle(), randomAngle());  
 
-    object.add(mesh);
+    trash.push(sphere);
+    scene.add(sphere);
 }
 
-function createBox(object) {
+function createBox() {
     'use strict';
 
     material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
     let geometry = new THREE.BoxBufferGeometry(trashWingspan * scale, trashWingspan * scale, trashWingspan * scale);
-    let mesh = new THREE.Mesh(geometry, material);
+    let mesh = new THREE.Mesh(geometry, material);   
 
-    mesh.position.set(0 * scale, 10 * scale, 0 * scale);    
+    var box = new ObjectCollision(trashWingspan * scale);
+    box.add(mesh);
+    box.sphericalSet(objectOrbit, randomAngle(), randomAngle());  
 
-    object.add(mesh);
+    trash.push(box);
+    scene.add(box);
 }
 
-function createPlanet(object) {
-    'use strict';
-
-    material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
-    let geometry = new THREE.SphereGeometry(planetRadius * scale, 30 * scale, 30 * scale);
-    let mesh = new THREE.Mesh(geometry, material);
-
-    mesh.position.set(0 * scale, 10 * scale, 0 * scale);    
-
-    object.add(mesh);
+function createTrash() {
+    for (let i = 0; i < 6; i++) {
+        createDodecahedron();
+        createIcosahedron();
+        createOctahedron();
+        createSphere();
+        createBox();
+    }
 }
 
 function createCameras() {
@@ -119,29 +177,9 @@ function createScene() {
 
     scene.add(new THREE.AxesHelper(10));
 
-    planet = new THREE.Object3D();
-    createPlanet(planet);
-    scene.add(planet);
-
-    dodecahedron1 = new THREE.Object3D();
-    createDodecahedron(dodecahedron1);
-    scene.add(dodecahedron1);
-
-    icosahedron1 = new THREE.Object3D();
-    createIcosahedron(icosahedron1);
-    scene.add(icosahedron1);
-
-    octahedron1 = new THREE.Object3D();
-    createOctahedron(octahedron1);
-    scene.add(octahedron1);
-
-    sphere1 = new THREE.Object3D();
-    createSphere(sphere1);
-    scene.add(sphere1);
-
-    box1 = new THREE.Object3D();
-    createBox(box1);
-    scene.add(box1);
+    createPlanet();
+    createRocket();
+    createTrash();
 }
 
 function onResize() {
@@ -188,6 +226,8 @@ function onKeyDown(e) {
                     node.material.wireframe = !node.material.wireframe;
                 }
             });
+            break;
+        case 53: //5, Hitboxes
             break;
         
         case 39: // right arrow, Move Rocket Longitudinally
@@ -242,6 +282,7 @@ function init() {
 
     document.body.appendChild(renderer.domElement);
 
+    trash = [];
     createScene();
 
     createCameras();
