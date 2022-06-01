@@ -1,13 +1,13 @@
 /* global THREE */
 
-var perspCamera, orthoCamera, camera;
+var orthoCam, fixedPerspCam, perspCam, camera;
 
 var scene, renderer;
 
 var clock, delta;
 
 // Objects
-var planet, rocket, trash;
+var planet, rocket, trash, trashToRemove, trashRemoved;
 
 const scale = 1, rotationFactor = Math.PI / 5, trashNumber = 30;
 
@@ -27,7 +27,9 @@ class ObjectCollision extends THREE.Object3D {
 
         let material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
         let geometry = new THREE.SphereGeometry(radius, 10 * scale, 10 * scale);
-        let mesh = new THREE.Mesh(geometry, material);  
+        let mesh = new THREE.Mesh(geometry, material);
+        mesh.material.transparent = true;
+        mesh.material.opacity = 0.5;
         mesh.visible = false;
         this.hitbox = mesh;
 
@@ -52,7 +54,7 @@ class ObjectCollision extends THREE.Object3D {
     }
 
     collisionCheck(object) {
-        return (this.hitboxRadius + object.hitboxRadius()) ** 2 > (this.position.x - object.position.x) ** 2 + (this.position.y - object.position.y) ** 2 + (this.position.z - object.position.z) ** 2;
+        return (this.hitboxRadius + object.hitboxRadius) ** 2 >= (this.position.x - object.position.x) ** 2 + (this.position.y - object.position.y) ** 2 + (this.position.z - object.position.z) ** 2;
     }
 }
 
@@ -65,7 +67,7 @@ function createPlanet() {
 
     planet = new THREE.Object3D();
     
-    let material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
+    let material = new THREE.MeshBasicMaterial({ color: 0x4fd0e7, wireframe: true });
     let geometry = new THREE.SphereGeometry(planetRadius * scale, 30 * scale, 30 * scale);
     let mesh = new THREE.Mesh(geometry, material); 
     mesh.position.set(0, 0, 0);
@@ -78,7 +80,7 @@ function createRocket() {
     'use strict';
 
     rocket = new ObjectCollision((rocketWingspan / 2) * scale);
-    rocket.userData = {movingLong: false, movingLat: false, incrementFactor: rotationFactor};
+    rocket.userData = {factorLong: 0, factorLat: 0, factorInvert: 1};
     
     let material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
     let geometry = new THREE.CylinderGeometry(0.1 * scale, (rocketWingspan / 6) * scale, (rocketWingspan / 3) * scale, 10 * scale);
@@ -119,6 +121,7 @@ function createRocket() {
     rocket.sphericalSet(objectOrbit * scale, 0, Math.PI / 2);
 
     scene.add(rocket);
+    rocket.lookAt(scene.position);
 }
 
 function createDodecahedron() {
@@ -208,23 +211,32 @@ function createTrash() {
 
 function createCameras() {
     'use strict';
-    perspCamera = new THREE.PerspectiveCamera(70, 
-        window.innerWidth / window.innerHeight, 1, 1000);
-    perspCamera.position.x = 80 * scale;
-    perspCamera.position.y = 0;
-    perspCamera.position.z = 0;
-    perspCamera.lookAt(scene.position);
     
-    orthoCamera = new THREE.OrthographicCamera(window.innerWidth / - 2, 
+    orthoCam = new THREE.OrthographicCamera(window.innerWidth / - 2, 
         window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000);
-    orthoCamera.zoom = 7 / scale;
-    orthoCamera.updateProjectionMatrix();
-    orthoCamera.position.x = 50 * scale;
-    orthoCamera.position.y = 0;
-    orthoCamera.position.z = 0;
-    orthoCamera.lookAt(scene.position);
+    orthoCam.zoom = 7 / scale;
+    orthoCam.updateProjectionMatrix();
+    orthoCam.position.x = 50 * scale;
+    orthoCam.position.y = 0;
+    orthoCam.position.z = 0;
+    orthoCam.lookAt(scene.position);
 
-    camera = orthoCamera;
+    fixedPerspCam = new THREE.PerspectiveCamera(70, 
+        window.innerWidth / window.innerHeight, 1, 1000);
+    fixedPerspCam.position.x = 80 * scale;
+    fixedPerspCam.position.y = 0;
+    fixedPerspCam.position.z = 0;
+    fixedPerspCam.lookAt(scene.position);
+
+    perspCam = new THREE.PerspectiveCamera(70, 
+        window.innerWidth / window.innerHeight, 1, 1000);
+    perspCam.position.x = 0;
+    perspCam.position.y = 0;
+    perspCam.position.z = -36.8 * scale;
+    perspCam.lookAt(scene.position);
+    rocket.add(perspCam);
+
+    camera = orthoCam;
 }
 
 function createScene() {
@@ -241,13 +253,69 @@ function createScene() {
     createTrash();
 }
 
+function deleteTrash() {
+    for (let i = 0; i < trashToRemove.length; i++) {
+        trashToRemove[i].removeFromParent();
+        trashRemoved.push(trashToRemove[i]);
+    }
+    trashToRemove = [];
+}
+
+function collisionsRocket() {
+    for (let i = 0; i < trash.length; i++) {
+        if (rocket.collisionCheck(trash[i])) {
+            trashToRemove.push(trash[i]);
+            trash.splice(i, 1);
+        }
+    }
+}
+
+function moveRocket() {
+    let step;
+    let invertRocket = false;
+
+    let newPhi = rocket.phi;
+    let newTheta = rocket.theta;
+    if (rocket.userData.factorLat != 0) {
+        step = rocket.userData.factorLat * delta;
+        newPhi += step;
+        if (newPhi > 2 * Math.PI) {
+            newPhi -= 2 * Math.PI;
+        }
+        else if (newPhi < 0) {
+            newPhi += 2 * Math.PI;
+        }
+        if ((rocket.phi < Math.PI && newPhi >= Math.PI) || (rocket.phi > Math.PI && newPhi <= Math.PI)) {
+            invertRocket = true;
+            rocket.userData.factorInvert = -rocket.userData.factorInvert;
+        }
+    }
+    if (invertRocket) {
+        rocket.up.multiplyScalar(-1);
+    }
+
+    if (rocket.userData.factorLong != 0) {
+        step = rocket.userData.factorInvert * rocket.userData.factorLong * delta;
+        newTheta += step;
+        if (newTheta > 2 * Math.PI) {
+            newTheta -= 2 * Math.PI;
+        }
+        else if (newTheta < 0) {
+            newTheta += 2 * Math.PI;
+        }
+    }
+
+    rocket.sphericalSet(rocket.radius, newTheta, newPhi);
+    rocket.lookAt(scene.position);
+}
+
 function onResize() {
     'use strict';
 
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     if (window.innerHeight > 0 && window.innerWidth > 0) {
-        if (camera == perspCamera) {
+        if (camera == fixedPerspCam || camera == perspCam) {
             camera.aspect = renderer.getSize().width / renderer.getSize().height;
             camera.updateProjectionMatrix();
         }
@@ -266,12 +334,13 @@ function onKeyDown(e) {
 
     switch(e.keyCode) {
         case 49: //1, Orthographic Camera
-            camera = orthoCamera;
+            camera = orthoCam;
             break;
         case 50: //2, Persp Fixed Camera
-            camera = perspCamera;
+            camera = fixedPerspCam;
             break;
         case 51: //3, Persp Moving Camera
+            camera = perspCam;
             break;
 
         case 52: //4, Wireframe
@@ -283,33 +352,29 @@ function onKeyDown(e) {
             break;
         case 53: //5, Hitboxes
             rocket.hitboxVisible();
-            for (let i = 0; i < trashNumber; i++) {
+            for (let i = 0; i < trash.length; i++) {
                 trash[i].hitboxVisible();
             }
             break;
         
         case 39: // right arrow, Move Rocket Longitudinally
-            if (rocket.userData.movingLong == false) {
-                rocket.userData.movingLong = true;
-                rocket.userData.incrementFactor = -rotationFactor;
+            if (rocket.userData.factorLong == 0) {
+                rocket.userData.factorLong = -rotationFactor;
             }
             break;
         case 37: // left arrow, Move Rocket Longitudinally
-            if (rocket.userData.movingLong == false) {
-                rocket.userData.movingLong = true;
-                rocket.userData.incrementFactor = rotationFactor;
+            if (rocket.userData.factorLong == 0) {
+                rocket.userData.factorLong = rotationFactor;
             }
             break;
         case 38: //up arrow, Move Rocket Latitudinally
-            if (rocket.userData.movingLat == false) {
-                rocket.userData.movingLat = true;
-                rocket.userData.incrementFactor = -rotationFactor;
+            if (rocket.userData.factorLat == 0) {
+                rocket.userData.factorLat = -rotationFactor;
             }
             break;
         case 40: //down arrow, Move Rocket Latitudinally
-            if (rocket.userData.movingLat == false) {
-                rocket.userData.movingLat = true;
-                rocket.userData.incrementFactor = rotationFactor;
+            if (rocket.userData.factorLat == 0) {
+                rocket.userData.factorLat = rotationFactor;
             }
             break;
     }
@@ -322,11 +387,11 @@ function onKeyUp(e) {
 
         case 39: // right arrow
         case 37: // left arrow
-            rocket.userData.movingLong = false;
+            rocket.userData.factorLong = 0;
             break;
         case 38: //up arrow
         case 40: //down arrow
-            rocket.userData.movingLat = false;
+            rocket.userData.factorLat = 0;
             break;
     }
 }
@@ -341,14 +406,9 @@ function animate() {
 
     delta = clock.getDelta();
 
-    if (rocket.userData.movingLong) {
-        let step = rocket.userData.incrementFactor * delta;
-        rocket.sphericalSet(rocket.radius, rocket.theta + step, rocket.phi);
-    }
-    if (rocket.userData.movingLat) {
-        let step = rocket.userData.incrementFactor * delta;
-        rocket.sphericalSet(rocket.radius, rocket.theta, rocket.phi + step);
-    }
+    deleteTrash();
+    moveRocket();
+    collisionsRocket();
 
     render();
 
@@ -368,6 +428,8 @@ function init() {
     document.body.appendChild(renderer.domElement);
 
     trash = [];
+    trashToRemove = [];
+    trashRemoved = [];
     createScene();
 
     createCameras();
