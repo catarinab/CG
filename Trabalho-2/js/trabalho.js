@@ -127,22 +127,21 @@ function createRocket() {
     rocketGroup.lookAt(scene.position);
 }
 
-function addTrash(object, theta, phi) {
-    object.sphericalSet(objectOrbit * scale, theta, phi); 
-    if (theta <= Math.PI / 2 || theta >= 3 * Math.PI / 2) {
-        if (phi >= Math.PI) {
-            trashQuad1.push(object);
+function selectTrashQuad(object) {
+    if (object.position.y + object.hitboxRadius > 0) {
+        if (object.position.z + object.hitboxRadius > 0) {
+            trash = trashQuad2;
         }
         else {
-            trashQuad2.push(object);
+            trash = trashQuad1;
         }
     }
     else {
-        if (phi >= Math.PI) {
-            trashQuad4.push(object);
+        if (object.position.z + object.hitboxRadius > 0) {
+            trash = trashQuad3;
         }
         else {
-            trashQuad3.push(object);
+            trash = trashQuad4;
         }
     }
 }
@@ -157,7 +156,10 @@ function createDodecahedron() {
     var dodecahedron = new ObjectCollision((trashWingspan / 2) * scale);
     dodecahedron.add(mesh); 
     
-    addTrash(dodecahedron, randomAngle(), randomAngle());
+    dodecahedron.sphericalSet(objectOrbit * scale, randomAngle(), randomAngle());
+    selectTrashQuad(dodecahedron);
+    trash.push(dodecahedron);
+
     scene.add(dodecahedron);
 }
 
@@ -171,7 +173,10 @@ function createIcosahedron() {
     var icosahedron = new ObjectCollision((trashWingspan / 2) * scale);
     icosahedron.add(mesh);
     
-    addTrash(icosahedron, randomAngle(), randomAngle());
+    icosahedron.sphericalSet(objectOrbit * scale, randomAngle(), randomAngle());
+    selectTrashQuad(icosahedron);
+    trash.push(icosahedron);
+
     scene.add(icosahedron);
 }
 
@@ -185,7 +190,10 @@ function createOctahedron() {
     var octahedron = new ObjectCollision((trashWingspan / 2) * scale);
     octahedron.add(mesh);
 
-    addTrash(octahedron, randomAngle(), randomAngle());
+    octahedron.sphericalSet(objectOrbit * scale, randomAngle(), randomAngle());
+    selectTrashQuad(octahedron);
+    trash.push(octahedron);
+
     scene.add(octahedron);
 }
 
@@ -199,7 +207,10 @@ function createSphere() {
     var sphere = new ObjectCollision((trashWingspan / 2) * scale);
     sphere.add(mesh); 
 
-    addTrash(sphere, randomAngle(), randomAngle());
+    sphere.sphericalSet(objectOrbit * scale, randomAngle(), randomAngle());
+    selectTrashQuad(sphere);
+    trash.push(sphere);
+
     scene.add(sphere);
 }
 
@@ -213,7 +224,10 @@ function createBox() {
     var box = new ObjectCollision(trashWingspan * scale);
     box.add(mesh);
 
-    addTrash(box, randomAngle(), randomAngle());
+    box.sphericalSet(objectOrbit * scale, randomAngle(), randomAngle());
+    selectTrashQuad(box);
+    trash.push(box);
+
     scene.add(box);
 }
 
@@ -280,6 +294,7 @@ function deleteTrash() {
 }
 
 function collisionsRocket() {
+    selectTrashQuad(rocketGroup);
     for (let i = 0; i < trash.length; i++) {
         if (rocketGroup.collisionCheck(trash[i])) {
             trashToRemove.push(trash[i]);
@@ -344,23 +359,6 @@ function moveRocket() {
     }
     else if (rocketGroup.userData.factorLong > 0) {
         rocket.rotation.z = - Math.PI / 2;
-    }
-
-    if (newTheta <= Math.PI / 2 || newTheta >= 3 * Math.PI / 2) {
-        if (newPhi >= Math.PI) {
-            trash = trashQuad1;
-        }
-        else {
-            trash = trashQuad2;
-        }
-    }
-    else {
-        if (newPhi >= Math.PI) {
-            trash = trashQuad4;
-        }
-        else {
-            trash = trashQuad3;
-        }
     }
 }
 
@@ -498,6 +496,7 @@ function init() {
     trashQuad4 = [];
     trashToRemove = [];
     trashRemoved = [];
+
     createScene();
 
     createCameras();
