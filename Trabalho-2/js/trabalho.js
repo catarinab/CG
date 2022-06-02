@@ -7,7 +7,7 @@ var scene, renderer;
 var clock, delta;
 
 // Objects
-var planet, rocket, trash, trashToRemove, trashRemoved;
+var planet, rocket, rocketGroup, trash, trashToRemove, trashRemoved;
 
 const scale = 1, rotationFactor = Math.PI / 5, trashNumber = 30;
 
@@ -67,6 +67,7 @@ function createPlanet() {
 
     planet = new THREE.Object3D();
     
+    //const texture = new THREE.TextureLoader().load('./assets/earthmap1k.jpg');
     let material = new THREE.MeshBasicMaterial({ color: 0x4fd0e7, wireframe: true });
     let geometry = new THREE.SphereGeometry(planetRadius * scale, 30 * scale, 30 * scale);
     let mesh = new THREE.Mesh(geometry, material); 
@@ -79,8 +80,7 @@ function createPlanet() {
 function createRocket() {
     'use strict';
 
-    rocket = new ObjectCollision((rocketWingspan / 2) * scale);
-    rocket.userData = {factorLong: 0, factorLat: 0, factorInvert: 1};
+    rocket = new THREE.Object3D();
     
     let material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
     let geometry = new THREE.CylinderGeometry(0.1 * scale, (rocketWingspan / 6) * scale, (rocketWingspan / 3) * scale, 10 * scale);
@@ -118,10 +118,13 @@ function createRocket() {
     mesh.position.set(0, -((2 * rocketWingspan / 3) / 2) * scale, -(rocketWingspan / 6) * scale);
     rocket.add(mesh); 
     
-    rocket.sphericalSet(objectOrbit * scale, 0, Math.PI / 2);
+    rocketGroup = new ObjectCollision((rocketWingspan / 2) * scale);
+    rocketGroup.userData = {factorLong: 0, factorLat: 0, factorInvert: 1};
+    rocketGroup.add(rocket);
+    rocketGroup.sphericalSet(objectOrbit * scale, 0, Math.PI / 2);
 
-    scene.add(rocket);
-    rocket.lookAt(scene.position);
+    scene.add(rocketGroup);
+    rocketGroup.lookAt(scene.position);
 }
 
 function createDodecahedron() {
@@ -231,8 +234,8 @@ function createCameras() {
     perspCam = new THREE.PerspectiveCamera(70, 
         window.innerWidth / window.innerHeight, 1, 1000);
     perspCam.position.x = 0;
-    perspCam.position.y = 0;
-    perspCam.position.z = -36.8 * scale;
+    perspCam.position.y = -5 * scale;
+    perspCam.position.z = -5 * scale;
     perspCam.lookAt(scene.position);
     rocket.add(perspCam);
 
@@ -248,7 +251,7 @@ function createScene() {
     createPlanet();
 
     createRocket();
-    rocket.add(new THREE.AxesHelper(1 * scale));
+    rocketGroup.add(new THREE.AxesHelper(1 * scale));
 
     createTrash();
 }
@@ -263,7 +266,7 @@ function deleteTrash() {
 
 function collisionsRocket() {
     for (let i = 0; i < trash.length; i++) {
-        if (rocket.collisionCheck(trash[i])) {
+        if (rocketGroup.collisionCheck(trash[i])) {
             trashToRemove.push(trash[i]);
             trash.splice(i, 1);
         }
@@ -272,12 +275,11 @@ function collisionsRocket() {
 
 function moveRocket() {
     let step;
-    let invertRocket = false;
 
-    let newPhi = rocket.phi;
-    let newTheta = rocket.theta;
-    if (rocket.userData.factorLat != 0) {
-        step = rocket.userData.factorLat * delta;
+    let newPhi = rocketGroup.phi;
+    let newTheta = rocketGroup.theta;
+    if (rocketGroup.userData.factorLat != 0) {
+        step = rocketGroup.userData.factorLat * delta;
         newPhi += step;
         if (newPhi > 2 * Math.PI) {
             newPhi -= 2 * Math.PI;
@@ -285,17 +287,14 @@ function moveRocket() {
         else if (newPhi < 0) {
             newPhi += 2 * Math.PI;
         }
-        if ((rocket.phi < Math.PI && newPhi >= Math.PI) || (rocket.phi > Math.PI && newPhi <= Math.PI)) {
-            invertRocket = true;
-            rocket.userData.factorInvert = -rocket.userData.factorInvert;
+        if ((rocketGroup.phi < Math.PI && newPhi >= Math.PI) || (rocketGroup.phi > Math.PI && newPhi <= Math.PI)) {
+            rocketGroup.userData.factorInvert = -rocketGroup.userData.factorInvert;
+            rocketGroup.up.multiplyScalar(-1);
         }
     }
-    if (invertRocket) {
-        rocket.up.multiplyScalar(-1);
-    }
 
-    if (rocket.userData.factorLong != 0) {
-        step = rocket.userData.factorInvert * rocket.userData.factorLong * delta;
+    if (rocketGroup.userData.factorLong != 0) {
+        step = rocketGroup.userData.factorInvert * rocketGroup.userData.factorLong * delta;
         newTheta += step;
         if (newTheta > 2 * Math.PI) {
             newTheta -= 2 * Math.PI;
@@ -305,8 +304,32 @@ function moveRocket() {
         }
     }
 
-    rocket.sphericalSet(rocket.radius, newTheta, newPhi);
-    rocket.lookAt(scene.position);
+    rocketGroup.sphericalSet(rocketGroup.radius, newTheta, newPhi);
+    rocketGroup.lookAt(scene.position);
+    if (rocketGroup.userData.factorLat < 0 && rocketGroup.userData.factorLong < 0) {
+        rocket.rotation.z = Math.PI / 4;
+    }
+    else if (rocketGroup.userData.factorLat < 0 && rocketGroup.userData.factorLong > 0) {
+        rocket.rotation.z = - Math.PI / 4;
+    }
+    else if (rocketGroup.userData.factorLat > 0 && rocketGroup.userData.factorLong < 0) {
+        rocket.rotation.z = Math.PI - Math.PI / 4;
+    }
+    else if (rocketGroup.userData.factorLat > 0 && rocketGroup.userData.factorLong > 0) {
+        rocket.rotation.z = Math.PI + Math.PI / 4;
+    }
+    else if (rocketGroup.userData.factorLat < 0) {
+        rocket.rotation.z = 0;
+    }
+    else if (rocketGroup.userData.factorLat > 0) {
+        rocket.rotation.z = Math.PI;
+    }
+    else if (rocketGroup.userData.factorLong < 0) {
+        rocket.rotation.z = Math.PI / 2;
+    }
+    else if (rocketGroup.userData.factorLong > 0) {
+        rocket.rotation.z = - Math.PI / 2;
+    }
 }
 
 function onResize() {
@@ -351,30 +374,31 @@ function onKeyDown(e) {
             });
             break;
         case 53: //5, Hitboxes
-            rocket.hitboxVisible();
+            rocketGroup.hitboxVisible();
             for (let i = 0; i < trash.length; i++) {
                 trash[i].hitboxVisible();
             }
             break;
         
         case 39: // right arrow, Move Rocket Longitudinally
-            if (rocket.userData.factorLong == 0) {
-                rocket.userData.factorLong = -rotationFactor;
+            if (rocketGroup.userData.factorLong == 0) {
+                rocketGroup.userData.factorLong = -rotationFactor;
             }
             break;
         case 37: // left arrow, Move Rocket Longitudinally
-            if (rocket.userData.factorLong == 0) {
-                rocket.userData.factorLong = rotationFactor;
+            if (rocketGroup.userData.factorLong == 0) {
+                rocketGroup.userData.factorLong = rotationFactor;
             }
             break;
         case 38: //up arrow, Move Rocket Latitudinally
-            if (rocket.userData.factorLat == 0) {
-                rocket.userData.factorLat = -rotationFactor;
+            if (rocketGroup.userData.factorLat == 0) {
+                rocketGroup.userData.factorLat = -rotationFactor;
             }
             break;
         case 40: //down arrow, Move Rocket Latitudinally
-            if (rocket.userData.factorLat == 0) {
-                rocket.userData.factorLat = rotationFactor;
+            if (rocketGroup.userData.factorLat == 0) {
+                rocketGroup.rotation.x = Math.PI;
+                rocketGroup.userData.factorLat = rotationFactor;
             }
             break;
     }
@@ -387,11 +411,11 @@ function onKeyUp(e) {
 
         case 39: // right arrow
         case 37: // left arrow
-            rocket.userData.factorLong = 0;
+            rocketGroup.userData.factorLong = 0;
             break;
         case 38: //up arrow
         case 40: //down arrow
-            rocket.userData.factorLat = 0;
+            rocketGroup.userData.factorLat = 0;
             break;
     }
 }
