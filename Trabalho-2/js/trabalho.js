@@ -9,7 +9,7 @@ var clock, delta;
 // Objects
 var planet, rocket, rocketGroup, trash, trashQuad1, trashQuad2, trashQuad3, trashQuad4, trashToRemove, trashRemoved;
 
-const scale = 1, rotationFactor = Math.PI / 5, trashNumber = 30;
+const scale = 2, rotationFactor = Math.PI / 5, trashNumber = 30;
 
 // Objects Scales
 const planetRadius = 36, rocketWingspan = planetRadius / 12, trashWingspan = planetRadius / 20, objectOrbit = planetRadius * 1.2;
@@ -25,7 +25,7 @@ class ObjectCollision extends THREE.Object3D {
         
         this.hitboxRadius = radius;
 
-        let material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+        let material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false });
         let geometry = new THREE.SphereGeometry(radius, 10 * scale, 10 * scale);
         let mesh = new THREE.Mesh(geometry, material);
         mesh.material.transparent = true;
@@ -67,8 +67,7 @@ function createPlanet() {
 
     planet = new THREE.Object3D();
     
-    //const texture = new THREE.TextureLoader().load('./assets/earthmap1k.jpg');
-    let material = new THREE.MeshBasicMaterial({ color: 0x4fd0e7, wireframe: true });
+    let material = new THREE.MeshBasicMaterial({ color: 0x4fd0e7, wireframe: false });
     let geometry = new THREE.SphereGeometry(planetRadius * scale, 30 * scale, 30 * scale);
     let mesh = new THREE.Mesh(geometry, material); 
     mesh.position.set(0, 0, 0);
@@ -82,37 +81,37 @@ function createRocket() {
 
     rocket = new THREE.Object3D();
     
-    let material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+    let material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false });
     let geometry = new THREE.CylinderGeometry(0.1 * scale, (rocketWingspan / 6) * scale, (rocketWingspan / 3) * scale, 10 * scale);
     let mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(0, ((rocketWingspan / 3 + 2 * rocketWingspan / 6) / 2) * scale, 0);
     rocket.add(mesh);  
 
-    material = new THREE.MeshBasicMaterial({ color: 0xdc143c, wireframe: true });
+    material = new THREE.MeshBasicMaterial({ color: 0xdc143c, wireframe: false });
     geometry = new THREE.CylinderGeometry((rocketWingspan / 6) * scale, (rocketWingspan / 6) * scale, (2 * rocketWingspan / 3) * scale, 10 * scale);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(0, -((rocketWingspan / 3) / 2) * scale, 0);
     rocket.add(mesh); 
 
-    material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+    material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false });
     geometry = new THREE.CapsuleGeometry((rocketWingspan / 12) * scale, (rocketWingspan / 3 - rocketWingspan / 6) * scale, 10 * scale, 10 * scale);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set((rocketWingspan / 6) * scale, -((2 * rocketWingspan / 3) / 2) * scale, 0)
     rocket.add(mesh);
 
-    material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+    material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false });
     geometry = new THREE.CapsuleGeometry((rocketWingspan / 12) * scale, (rocketWingspan / 3 - rocketWingspan / 6) * scale, 10 * scale, 10 * scale);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(-(rocketWingspan / 6) * scale, -((2 * rocketWingspan / 3) / 2) * scale, 0);
     rocket.add(mesh); 
 
-    material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+    material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false });
     geometry = new THREE.CapsuleGeometry((rocketWingspan / 12) * scale, (rocketWingspan / 3 - rocketWingspan / 6) * scale, 10 * scale, 10 * scale);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(0, -((2 * rocketWingspan / 3) / 2) * scale, (rocketWingspan / 6) * scale);
     rocket.add(mesh);
 
-    material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+    material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false });
     geometry = new THREE.CapsuleGeometry((rocketWingspan / 12) * scale, (rocketWingspan / 3 - rocketWingspan / 6) * scale, 10 * scale, 10 * scale);
     mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(0, -((2 * rocketWingspan / 3) / 2) * scale, -(rocketWingspan / 6) * scale);
@@ -149,7 +148,7 @@ function selectTrashQuad(object) {
 function createDodecahedron() {
     'use strict';
 
-    let material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
+    let material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: false });
     let geometry = new THREE.DodecahedronBufferGeometry((trashWingspan / 2) * scale);
     let mesh = new THREE.Mesh(geometry, material);
 
@@ -166,7 +165,7 @@ function createDodecahedron() {
 function createIcosahedron() {
     'use strict';
 
-    let material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
+    let material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: false });
     let geometry = new THREE.IcosahedronBufferGeometry((trashWingspan / 2) * scale);
     let mesh = new THREE.Mesh(geometry, material);
 
@@ -183,7 +182,7 @@ function createIcosahedron() {
 function createOctahedron() {
     'use strict';
 
-    let material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
+    let material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: false });
     let geometry = new THREE.OctahedronBufferGeometry((trashWingspan / 2) * scale);
     let mesh = new THREE.Mesh(geometry, material);;    
 
@@ -200,7 +199,7 @@ function createOctahedron() {
 function createSphere() {
     'use strict';
 
-    let material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
+    let material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: false });
     let geometry = new THREE.SphereBufferGeometry((trashWingspan / 2) * scale, 10 * scale, 10 * scale);
     let mesh = new THREE.Mesh(geometry, material);   
 
@@ -217,7 +216,7 @@ function createSphere() {
 function createBox() {
     'use strict';
 
-    let material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: true });
+    let material = new THREE.MeshBasicMaterial({ color: 0xedb381, wireframe: false });
     let geometry = new THREE.BoxBufferGeometry(trashWingspan * scale, trashWingspan * scale, trashWingspan * scale);
     let mesh = new THREE.Mesh(geometry, material);   
 
@@ -396,14 +395,7 @@ function onKeyDown(e) {
             camera = perspCam;
             break;
 
-        case 52: //4, Wireframe
-            scene.traverse(function(node) {
-                if (node instanceof THREE.Mesh) {
-                    node.material.wireframe = !node.material.wireframe;
-                }
-            });
-            break;
-        case 53: //5, Hitboxes
+        case 52: //4, Hitboxes
             rocketGroup.hitboxVisible();
             for (let i = 0; i < trashQuad1.length; i++) {
                 trashQuad1[i].hitboxVisible();
@@ -417,6 +409,13 @@ function onKeyDown(e) {
             for (let i = 0; i < trashQuad4.length; i++) {
                 trashQuad4[i].hitboxVisible();
             }
+            break;
+        case 53: //5, Wireframe
+            scene.traverse(function(node) {
+                if (node instanceof THREE.Mesh) {
+                    node.material.wireframe = !node.material.wireframe;
+                }
+            });
             break;
         
         case 39: // right arrow, Move Rocket Longitudinally
