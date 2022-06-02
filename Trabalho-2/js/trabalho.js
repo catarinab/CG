@@ -7,7 +7,7 @@ var scene, renderer;
 var clock, delta;
 
 // Objects
-var planet, rocket, rocketGroup, trash, trashToRemove, trashRemoved;
+var planet, rocket, rocketGroup, trash, trashQuad1, trashQuad2, trashQuad3, trashQuad4, trashToRemove, trashRemoved;
 
 const scale = 1, rotationFactor = Math.PI / 5, trashNumber = 30;
 
@@ -127,6 +127,26 @@ function createRocket() {
     rocketGroup.lookAt(scene.position);
 }
 
+function addTrash(object, theta, phi) {
+    object.sphericalSet(objectOrbit * scale, theta, phi); 
+    if (theta <= Math.PI / 2 || theta >= 3 * Math.PI / 2) {
+        if (phi >= Math.PI) {
+            trashQuad1.push(object);
+        }
+        else {
+            trashQuad2.push(object);
+        }
+    }
+    else {
+        if (phi >= Math.PI) {
+            trashQuad4.push(object);
+        }
+        else {
+            trashQuad3.push(object);
+        }
+    }
+}
+
 function createDodecahedron() {
     'use strict';
 
@@ -135,10 +155,9 @@ function createDodecahedron() {
     let mesh = new THREE.Mesh(geometry, material);
 
     var dodecahedron = new ObjectCollision((trashWingspan / 2) * scale);
-    dodecahedron.add(mesh);
-    dodecahedron.sphericalSet(objectOrbit * scale, randomAngle(), randomAngle());  
+    dodecahedron.add(mesh); 
     
-    trash.push(dodecahedron);
+    addTrash(dodecahedron, randomAngle(), randomAngle());
     scene.add(dodecahedron);
 }
 
@@ -151,9 +170,8 @@ function createIcosahedron() {
 
     var icosahedron = new ObjectCollision((trashWingspan / 2) * scale);
     icosahedron.add(mesh);
-    icosahedron.sphericalSet(objectOrbit * scale, randomAngle(), randomAngle());  
     
-    trash.push(icosahedron);
+    addTrash(icosahedron, randomAngle(), randomAngle());
     scene.add(icosahedron);
 }
 
@@ -166,9 +184,8 @@ function createOctahedron() {
 
     var octahedron = new ObjectCollision((trashWingspan / 2) * scale);
     octahedron.add(mesh);
-    octahedron.sphericalSet(objectOrbit * scale, randomAngle(), randomAngle());  
 
-    trash.push(octahedron);
+    addTrash(octahedron, randomAngle(), randomAngle());
     scene.add(octahedron);
 }
 
@@ -180,10 +197,9 @@ function createSphere() {
     let mesh = new THREE.Mesh(geometry, material);   
 
     var sphere = new ObjectCollision((trashWingspan / 2) * scale);
-    sphere.add(mesh);
-    sphere.sphericalSet(objectOrbit * scale, randomAngle(), randomAngle());  
+    sphere.add(mesh); 
 
-    trash.push(sphere);
+    addTrash(sphere, randomAngle(), randomAngle());
     scene.add(sphere);
 }
 
@@ -196,9 +212,8 @@ function createBox() {
 
     var box = new ObjectCollision(trashWingspan * scale);
     box.add(mesh);
-    box.sphericalSet(objectOrbit * scale, randomAngle(), randomAngle());  
 
-    trash.push(box);
+    addTrash(box, randomAngle(), randomAngle());
     scene.add(box);
 }
 
@@ -330,6 +345,23 @@ function moveRocket() {
     else if (rocketGroup.userData.factorLong > 0) {
         rocket.rotation.z = - Math.PI / 2;
     }
+
+    if (newTheta <= Math.PI / 2 || newTheta >= 3 * Math.PI / 2) {
+        if (newPhi >= Math.PI) {
+            trash = trashQuad1;
+        }
+        else {
+            trash = trashQuad2;
+        }
+    }
+    else {
+        if (newPhi >= Math.PI) {
+            trash = trashQuad4;
+        }
+        else {
+            trash = trashQuad3;
+        }
+    }
 }
 
 function onResize() {
@@ -375,8 +407,17 @@ function onKeyDown(e) {
             break;
         case 53: //5, Hitboxes
             rocketGroup.hitboxVisible();
-            for (let i = 0; i < trash.length; i++) {
-                trash[i].hitboxVisible();
+            for (let i = 0; i < trashQuad1.length; i++) {
+                trashQuad1[i].hitboxVisible();
+            }
+            for (let i = 0; i < trashQuad2.length; i++) {
+                trashQuad2[i].hitboxVisible();
+            }
+            for (let i = 0; i < trashQuad3.length; i++) {
+                trashQuad3[i].hitboxVisible();
+            }
+            for (let i = 0; i < trashQuad4.length; i++) {
+                trashQuad4[i].hitboxVisible();
             }
             break;
         
@@ -451,7 +492,10 @@ function init() {
 
     document.body.appendChild(renderer.domElement);
 
-    trash = [];
+    trashQuad1 = [];
+    trashQuad2 = [];
+    trashQuad3 = [];
+    trashQuad4 = [];
     trashToRemove = [];
     trashRemoved = [];
     createScene();
