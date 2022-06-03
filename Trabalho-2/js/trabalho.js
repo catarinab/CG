@@ -120,7 +120,12 @@ function createRocket() {
     rocketGroup = new ObjectCollision((rocketWingspan / 2) * scale);
     rocketGroup.userData = {factorLong: 0, factorLat: 0, factorInvert: 1};
     rocketGroup.add(rocket);
-    rocketGroup.sphericalSet(objectOrbit * scale, 0, Math.PI / 2);
+
+    rocketGroup.sphericalSet(objectOrbit * scale, randomAngle(), randomAngle());
+    if (rocketGroup.phi > Math.PI) {
+        rocketGroup.userData.factorInvert = -rocketGroup.userData.factorInvert;
+        rocketGroup.up.multiplyScalar(-1);
+    }
 
     scene.add(rocketGroup);
     rocketGroup.lookAt(scene.position);
@@ -220,7 +225,7 @@ function createBox() {
     let geometry = new THREE.BoxBufferGeometry(trashWingspan * scale, trashWingspan * scale, trashWingspan * scale);
     let mesh = new THREE.Mesh(geometry, material);   
 
-    var box = new ObjectCollision(trashWingspan * scale);
+    var box = new ObjectCollision(((Math.sqrt(3) * trashWingspan) / 2) * scale);
     box.add(mesh);
 
     box.sphericalSet(objectOrbit * scale, randomAngle(), randomAngle());
