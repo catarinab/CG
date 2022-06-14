@@ -1,34 +1,36 @@
 /* global THREE */
 
-var orthoCam, perspCam, vrCam, camera, dirLight, spotLightZ, spotLightX, spotLightC, ambientLight;
+var orthoCam, perspCam, vrCam, camera, dirLight, spotLight1, spotLight2, spotLight3;
 
 var scene, renderer;
 
 var clock, delta;
 
 // Objects
-var floor, podium, steps;
+var floor, stage, steps;
 
 // Constants
-const scale = 1, perspCamY = 11;
+const scale = 1, perspCamX = -10, perspCamY = 15, perspCamZ = 10;
 
 // Objects Scales
-const floorWidth = 14, floorLength = 14, podiumWidth = 7, podiumHeight = 2, podiumDepth = 7,
-        stepWidth = 1, stepDepth = 0.5;
+const floorWidth = 20, floorLength = 14, stageWidth = 15, stageHeight = 2, stageDepth = 7, stepDepth = 0.5;
 
 function createLights() {
     'use strict';
 
     // Directional Light
-    dirLight = new THREE.DirectionalLight(0xffffff);
-    dirLight.position.set(0, perspCamY, 0);
-    dirLight.target.position.set(0, 0, -5);
+    dirLight = new THREE.DirectionalLight(0xffffff, 3);
+    dirLight.position.set(perspCamX * scale, perspCamY * scale, perspCamZ * scale);
+    dirLight.target.position.set(0, stageHeight * scale, 0);
     scene.add(dirLight);
 
     // Spot Lights
-
-    ambientLight = new THREE.AmbientLight(0xffffff);
-    scene.add(ambientLight);
+    /*
+    var spotLight1 = new THREE. SpotLight (0xffffff, 3, 20 * scale, Math.PI / 2, 0.1);
+    spotLight1.position.set(0, perspCamY * scale, perspCamZ * scale);
+    spotLight1.target.position.set(-(floorWidth / 3) * scale, stageHeight * scale, 0);
+    scene.add(spotLight1);
+    */
 }
 
 function createSteps() {
@@ -43,44 +45,44 @@ function createSteps() {
     let phongMaterialBig = new THREE.MeshPhongMaterial({ color: 0x55342b, wireframe: false });
     let phongMaterialSmall = new THREE.MeshPhongMaterial({ color: 0x55342b, wireframe: false });
 
-    let bigStepGeometry = new THREE.BoxGeometry(stepWidth * scale, (2 * podiumHeight / 3) * scale, stepDepth * scale);
+    let bigStepGeometry = new THREE.BoxGeometry(stageWidth * scale, (2 * stageHeight / 3) * scale, stepDepth * scale);
     let bigStepMesh = new THREE.Mesh(bigStepGeometry, lambertMaterialBig); 
     bigStepMesh.position.set(0, 0, 0);
     
-    let smallStepGeometry = new THREE.BoxGeometry(stepWidth * scale, (podiumHeight / 3) * scale, stepDepth * scale);
+    let smallStepGeometry = new THREE.BoxGeometry(stageWidth, (stageHeight / 3) * scale, stepDepth * scale);
     let smallStepMesh = new THREE.Mesh(smallStepGeometry, lambertMaterialSmall); 
-    smallStepMesh.position.set(0, - (podiumHeight / 6) * scale, stepDepth * scale);
+    smallStepMesh.position.set(0, - (stageHeight / 6) * scale, stepDepth * scale);
 
     steps.userData = {altMaterial: [phongMaterialBig, phongMaterialSmall], meshes: [bigStepMesh, smallStepMesh]};
 
     steps.add(smallStepMesh); 
     steps.add(bigStepMesh);
-    steps.translateY((podiumHeight / 3) * scale);
-    steps.translateZ((podiumDepth / 2 + stepDepth / 2) * scale);
+    steps.translateY((stageHeight / 3) * scale);
+    steps.translateZ((stageDepth / 2 + stepDepth / 2) * scale);
 
     scene.add(steps);
 }
 
-function createPodium() {
+function createStage() {
     'use strict';
 
-    podium = new THREE.Object3D();
+    stage = new THREE.Object3D();
     
     // Gouraud Shading
     let lambertMaterial = new THREE.MeshLambertMaterial({ color: 0x55342b, wireframe: false });
     // Phong Shading
     let phongMaterial = new THREE.MeshPhongMaterial({ color: 0x55342b, wireframe: false });
 
-    let geometry = new THREE.BoxGeometry(podiumWidth * scale, podiumHeight * scale, podiumDepth * scale);
+    let geometry = new THREE.BoxGeometry(stageWidth * scale, stageHeight * scale, stageDepth * scale);
     let mesh = new THREE.Mesh(geometry, lambertMaterial); 
     mesh.position.set(0, 0, 0);
 
-    podium.userData = {altMaterial: phongMaterial};
+    stage.userData = {altMaterial: phongMaterial};
     
-    podium.add(mesh);  
-    podium.translateY(podiumHeight/2 * scale);
+    stage.add(mesh);  
+    stage.translateY(stageHeight/2 * scale);
 
-    scene.add(podium);
+    scene.add(stage);
 }
 
 function createFloor() {
@@ -110,9 +112,9 @@ function createCameras() {
     
     perspCam = new THREE.PerspectiveCamera(70, 
         window.innerWidth / window.innerHeight, 1, 100);
-    perspCam.position.x = -10 * scale;
-    perspCam.position.y = 15 * scale;
-    perspCam.position.z = 10 * scale;
+    perspCam.position.x = perspCamX * scale;
+    perspCam.position.y = perspCamY * scale;
+    perspCam.position.z = perspCamZ * scale;
     perspCam.lookAt(scene.position);
     
     orthoCam = new THREE.OrthographicCamera(window.innerWidth / - 2, 
@@ -123,7 +125,7 @@ function createCameras() {
     orthoCam.position.y = 0;
     orthoCam.position.z = (floorWidth * 5) * scale;
     orthoCam.lookAt(scene.position);
-    orthoCam.position.y = podiumHeight * scale;
+    orthoCam.position.y = stageHeight * scale;
 
     camera = perspCam;
 }
@@ -135,7 +137,7 @@ function createScene() {
     scene.add(new THREE.AxesHelper(10 * scale));
 
     createFloor();
-    createPodium();
+    createStage();
     createSteps();
 }
 
