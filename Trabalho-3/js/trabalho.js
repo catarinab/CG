@@ -1,5 +1,7 @@
 /* global THREE */
 
+//import { VRButton } from 'VRButton.js';
+
 var orthoCam, perspCam, vrCam, camera, dirLight, dirLightHelper, spotLight1, spotLight2, spotLight3, spotLightHelper1, spotLightHelper2, spotLightHelper3;
 
 var scene, renderer;
@@ -7,13 +9,13 @@ var scene, renderer;
 var clock, delta;
 
 // Objects
-var floor, stage, steps, spotlight1, spotlight2, spotlight3;
+var spotlight1, spotlight2, spotlight3, floor, stage, steps, origami1, origami2, origami3;
 
 // Constants
 const scale = 1, perspCamX = 0, perspCamY = 40, perspCamZ = 40;
 
 // Objects Scales
-const spotlightBase = 2, spotlightHeight = 2, floorWidth = 80, floorLength = 50, stageWidth = 60, stageHeight = 7, stageDepth = 25, stepDepth = 2;
+const spotlightBase = 2, spotlightHeight = 2, floorWidth = 80, floorLength = 50, stageWidth = 60, stageHeight = 7, stageLength = 25, stepDepth = 2, paperLength = 7, offset = 1;
 
 function createSpotlights() {
     let spotlight, spotLight, spotLightHelper;
@@ -102,19 +104,6 @@ function createLights() {
     createSpotlights();
 }
 
-function createThreeShape(v1, v2, v3) {
-    let geom = new THREE.Geometry();
-
-    geom.vertices.push(v1);
-    geom.vertices.push(v2);
-    geom.vertices.push(v3);
-
-    geom.faces.push( new THREE.Face3( 0, 1, 2 ) );
-
-    var object = new THREE.Mesh( geom, new THREE.MeshNormalMaterial() );
-    return object;
-}
-
 function createSteps() {
     'use strict';
 
@@ -140,7 +129,7 @@ function createSteps() {
     steps.add(smallStepMesh); 
     steps.add(bigStepMesh);
     steps.translateY((stageHeight / 3) * scale);
-    steps.translateZ((stageDepth / 2 + stepDepth / 2) * scale);
+    steps.translateZ((stageLength / 2 + stepDepth / 2) * scale);
 
     scene.add(steps);
 }
@@ -155,7 +144,7 @@ function createStage() {
     // Phong Shading
     let phongMaterial = new THREE.MeshPhongMaterial({ color: 0x55342b, wireframe: false });
 
-    let geometry = new THREE.BoxGeometry(stageWidth * scale, stageHeight * scale, stageDepth * scale);
+    let geometry = new THREE.BoxGeometry(stageWidth * scale, stageHeight * scale, stageLength * scale);
     let mesh = new THREE.Mesh(geometry, phongMaterial); 
     mesh.position.set(0, 0, 0);
 
@@ -187,6 +176,54 @@ function createFloor() {
     floor.rotateX(-Math.PI/2);
 
     scene.add(floor);
+}
+
+function createThreeShape(v1, v2, v3) {
+    let geometry = new THREE.Geometry(); 
+
+    geometry.vertices.push(v1);
+    geometry.vertices.push(v2);
+    geometry.vertices.push(v3);
+
+    geometry.faces.push(new THREE.Face3(0, 1, 2));
+
+   return geometry;
+}
+
+function createOrigami1() {
+    'use strict';
+
+    origami1 = new THREE.Object3D();
+
+    // Gouraud Shading
+    let lambertMaterialRight = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false });
+    let lambertMaterialLeft = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false });
+    // Phong Shading
+    let phongMaterialRight = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false });
+    let phongMaterialLeft = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false });
+
+    // Inner Degree of Paper 135 Degrees
+    let geometryRight = createThreeShape(new THREE.Vector3(0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(0, (Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(-(paperLength / 2 - 0.53284) * scale, 0, 2.67878 * scale));
+    let meshRight = new THREE.Mesh(geometryRight, phongMaterialRight); 
+
+    let geometryLeft = createThreeShape(new THREE.Vector3(0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(0, (Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3((paperLength / 2 - 0.53284) * scale, 0, 2.67878 * scale));
+    let meshLeft = new THREE.Mesh(geometryLeft, phongMaterialLeft); 
+
+    origami1.userData = {altMaterial: [lambertMaterialRight, lambertMaterialLeft], mesh: [meshRight, meshLeft]};
+    
+    //origami1.add(meshRight);
+    origami1.add(meshLeft);
+    origami1.position.set(-(stageWidth / 3) * scale, (stageHeight + Math.sqrt(2 * (paperLength ** 2)) / 2 + offset) * scale, 0);
+
+    scene.add(origami1);
+}
+
+function createOrigamis() {
+    'use strict';
+
+    createOrigami1();
+    //createOrigami2();
+    //createOrigami3();
 }
 
 function createCameras() {
@@ -221,6 +258,7 @@ function createScene() {
     createFloor();
     createStage();
     createSteps();
+    createOrigamis();
 }
 
 function onResize() {
