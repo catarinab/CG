@@ -1,4 +1,4 @@
-class VRButton {
+export class VRButton {
 
 	static createButton( renderer, options ) {
 
@@ -203,5 +203,3 @@ class VRButton {
 }
 
 VRButton.registerSessionGrantedListener();
-
-export { VRButton };

@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>1&ordf; aula - CG@IST/UL</title>
+        <title>3&#186; Projecto - CG@IST/UL</title>
         <style>
             body {
                 margin: 0px;
@@ -11,10 +11,13 @@
             }
         </style>
         <script src="js/three.js"></script>
-        <script src="js/trabalho.js"></script>
+        <script type="module" src="js/trabalho.js"></script>
+        <script type="module" src="js/VRButton.js"></script>
     </head>
     <body>
-        <script>
+        <script type="module">
+            import {init} from './js/trabalho.js';
+            import {animate} from './js/trabalho.js';
             init();
             animate();
         </script>
