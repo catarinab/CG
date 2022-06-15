@@ -24,19 +24,19 @@ function createSpotlights() {
         if (i == 0) {
             spotlight1 = new THREE.Object3D();
             spotlight = spotlight1;
-            spotLight1 = new THREE.SpotLight(0xffffff, 2, (perspCamY / 2 - stageHeight) * scale, Math.PI / 4, 1, 0);
+            spotLight1 = new THREE.SpotLight(0xffffff, 3, Math.sqrt((2 * perspCamY / 3 - stageHeight) ** 2 + (stageLength / 2) ** 2) * scale, Math.PI / 8, 1, 0);
             spotLight = spotLight1;
         }
         else if (i == 1) {
             spotlight2 = new THREE.Object3D();
             spotlight = spotlight2;
-            spotLight2 = new THREE.SpotLight(0xffffff, 2, (perspCamY / 2 - stageHeight) * scale, Math.PI / 4, 1, 0);
+            spotLight2 = new THREE.SpotLight(0xffffff, 3, Math.sqrt((2 * perspCamY / 3 - stageHeight) ** 2 + (stageLength / 2) ** 2) * scale, Math.PI / 8, 1, 0);
             spotLight = spotLight2;
         }
         else {
             spotlight3 = new THREE.Object3D();
             spotlight = spotlight3;
-            spotLight3 = new THREE.SpotLight(0xffffff, 2, (perspCamY / 2 - stageHeight) * scale, Math.PI / 4, 1, 0);
+            spotLight3 = new THREE.SpotLight(0xffffff, 3, Math.sqrt((2 * perspCamY / 3 - stageHeight) ** 2 + (stageLength / 2) ** 2) * scale, Math.PI / 8, 1, 0);
             spotLight = spotLight3;
         }
 
@@ -57,26 +57,27 @@ function createSpotlights() {
         spotlight.add(meshHead);
 
         spotlight.userData = {altMaterial: [lambertMaterialBase, lambertMaterialHead], mesh: [meshBase, meshHead]};
-        
+        spotlight.rotateX(Math.PI / 6);
+
         if (i == 0) {
-            spotlight.position.set(-(stageWidth / 3) * scale, (perspCamY / 2) * scale, 0);
-            spotLight.position.set(-(stageWidth / 3) * scale, (perspCamY / 2) * scale, 0);
+            spotlight.position.set(-(stageWidth / 3) * scale, (2 * perspCamY / 3) * scale, (stageLength / 2) * scale);
+            spotLight.position.set(-(stageWidth / 3) * scale, (2 * perspCamY / 3) * scale, (stageLength / 2) * scale);
             spotLight.target.position.set(-(stageWidth / 3) * scale, stageHeight * scale, 0);
             spotLight.target.updateMatrixWorld();
             spotLightHelper1 = new THREE.SpotLightHelper(spotLight);
             spotLightHelper = spotLightHelper1;
         }
         else if (i == 1) {
-            spotlight.position.set(0, (perspCamY / 2) * scale, 0);
-            spotLight.position.set(0, (perspCamY / 2) * scale, 0);
+            spotlight.position.set(0, (2 * perspCamY / 3) * scale, (stageLength / 2) * scale);
+            spotLight.position.set(0, (2 * perspCamY / 3) * scale, (stageLength / 2) * scale);
             spotLight.target.position.set(0, stageHeight * scale, 0);
             spotLight.target.updateMatrixWorld();
             spotLightHelper2 = new THREE.SpotLightHelper(spotLight);
             spotLightHelper = spotLightHelper2;
         }
         else {
-            spotlight.position.set((stageWidth / 3) * scale, (perspCamY / 2) * scale, 0);
-            spotLight.position.set((stageWidth / 3) * scale, (perspCamY / 2) * scale, 0);
+            spotlight.position.set((stageWidth / 3) * scale, (2 * perspCamY / 3) * scale, (stageLength / 2) * scale);
+            spotLight.position.set((stageWidth / 3) * scale, (2 * perspCamY / 3) * scale, (stageLength / 2) * scale);
             spotLight.target.position.set((stageWidth / 3) * scale, stageHeight * scale, 0);
             spotLight.target.updateMatrixWorld();
             spotLightHelper3 = new THREE.SpotLightHelper(spotLight);
@@ -186,6 +187,7 @@ function createThreeShape(v1, v2, v3) {
     geometry.vertices.push(v3);
 
     geometry.faces.push(new THREE.Face3(0, 1, 2));
+    geometry.computeFaceNormals();
 
    return geometry;
 }
@@ -196,22 +198,22 @@ function createOrigami1() {
     origami1 = new THREE.Object3D();
 
     // Gouraud Shading
-    let lambertMaterialRight = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false });
-    let lambertMaterialLeft = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false });
+    let lambertMaterialRight = new THREE.MeshLambertMaterial({ color: 0xfffff, wireframe: false, side: THREE.DoubleSide });
+    let lambertMaterialLeft = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
     // Phong Shading
-    let phongMaterialRight = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false });
-    let phongMaterialLeft = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false });
+    let phongMaterialRight = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
+    let phongMaterialLeft = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
 
-    // Inner Degree of Paper 135 Degrees
-    let geometryRight = createThreeShape(new THREE.Vector3(0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(0, (Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(-(paperLength / 2 - 0.53284) * scale, 0, 2.67878 * scale));
+    // Inner Degree of Paper 157.5 Degrees (14 * Math.PI / 16 Rad)
+    let geometryRight = createThreeShape(new THREE.Vector3(0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(0, (Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(-(4.94975 - 0.1345) * scale, 0, 1.36563 * scale));
     let meshRight = new THREE.Mesh(geometryRight, phongMaterialRight); 
 
-    let geometryLeft = createThreeShape(new THREE.Vector3(0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(0, (Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3((paperLength / 2 - 0.53284) * scale, 0, 2.67878 * scale));
+    let geometryLeft = createThreeShape(new THREE.Vector3(0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(0, (Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3((4.94975 - 0.1345) * scale, 0, 1.36563 * scale));
     let meshLeft = new THREE.Mesh(geometryLeft, phongMaterialLeft); 
 
     origami1.userData = {altMaterial: [lambertMaterialRight, lambertMaterialLeft], mesh: [meshRight, meshLeft]};
     
-    //origami1.add(meshRight);
+    origami1.add(meshRight);
     origami1.add(meshLeft);
     origami1.position.set(-(stageWidth / 3) * scale, (stageHeight + Math.sqrt(2 * (paperLength ** 2)) / 2 + offset) * scale, 0);
 
