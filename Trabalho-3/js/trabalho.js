@@ -3,6 +3,7 @@
 import { VRButton } from './VRButton.js';
 
 var orthoCam, perspCam, pauseCamera, camera, lastCamera, dirLight, dirLightHelper, spotLight1, spotLight2, spotLight3, spotLightHelper1, spotLightHelper2, spotLightHelper3;
+var origamiTexture;
 
 var scene, renderer, isPause, isPhong;
 
@@ -96,7 +97,7 @@ function createLights() {
     'use strict';
 
     // Directional Light
-    dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight = new THREE.DirectionalLight(0xffffff, 2);
     dirLight.position.set(20 * scale, 40 * scale, 20 * scale);
     dirLight.target.position.set(0, stageHeight * scale, 0);
     dirLightHelper = new THREE.DirectionalLightHelper(dirLight);
@@ -111,13 +112,22 @@ function createSteps() {
     'use strict';
 
     steps = new THREE.Object3D();
+
+    let stepsTexture = new THREE.TextureLoader().load('images/steps.jpg');
+    stepsTexture.wrapS = THREE.RepeatWrapping;
+    stepsTexture.wrapT = THREE.RepeatWrapping;
+    stepsTexture.repeat.set(5 * scale, 5 * scale);
+
+    let stepsBumpMap = new THREE.TextureLoader().load('images/stepsBump.jpg');
+    stepsBumpMap.wrapS = THREE.RepeatWrapping;
+    stepsBumpMap.wrapT = THREE.RepeatWrapping;
     
     // Gouraud Shading
-    let lambertMaterialBig = new THREE.MeshLambertMaterial({ color: 0x55342b, wireframe: false });
-    let lambertMaterialSmall = new THREE.MeshLambertMaterial({ color: 0x55342b, wireframe: false });
+    let lambertMaterialBig = new THREE.MeshLambertMaterial({ map: stepsTexture, bumpMap: stepsBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
+    let lambertMaterialSmall = new THREE.MeshLambertMaterial({ map: stepsTexture, bumpMap: stepsBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
     // Phong Shading
-    let phongMaterialBig = new THREE.MeshPhongMaterial({ color: 0x55342b, wireframe: false });
-    let phongMaterialSmall = new THREE.MeshPhongMaterial({ color: 0x55342b, wireframe: false });
+    let phongMaterialBig = new THREE.MeshPhongMaterial({ map: stepsTexture, bumpMap: stepsBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
+    let phongMaterialSmall = new THREE.MeshPhongMaterial({ map: stepsTexture, bumpMap: stepsBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
 
     let bigStepGeometry = new THREE.BoxGeometry(stageWidth * scale, (2 * stageHeight / 3) * scale, stepDepth * scale, 10, 10, 10);
     let bigStepMesh = new THREE.Mesh(bigStepGeometry, phongMaterialBig); 
@@ -141,11 +151,20 @@ function createStage() {
     'use strict';
 
     stage = new THREE.Object3D();
+
+    let stageTexture = new THREE.TextureLoader().load('images/stage.jpg');
+    stageTexture.wrapS = THREE.RepeatWrapping;
+    stageTexture.wrapT = THREE.RepeatWrapping;
+    stageTexture.repeat.set(1 * scale, 1 * scale);
+
+    let stageBumpMap = new THREE.TextureLoader().load('images/stageBump.jpg');
+    stageBumpMap.wrapS = THREE.RepeatWrapping;
+    stageBumpMap.wrapT = THREE.RepeatWrapping;
     
     // Gouraud Shading
-    let lambertMaterial = new THREE.MeshLambertMaterial({ color: 0x55342b, wireframe: false });
+    let lambertMaterial = new THREE.MeshLambertMaterial({ map: stageTexture, bumpMap: stageBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
     // Phong Shading
-    let phongMaterial = new THREE.MeshPhongMaterial({ color: 0x55342b, wireframe: false });
+    let phongMaterial = new THREE.MeshPhongMaterial({ map: stageTexture, bumpMap: stageBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
 
     let geometry = new THREE.BoxGeometry(stageWidth * scale, stageHeight * scale, stageLength * scale, 10, 10, 10);
     let mesh = new THREE.Mesh(geometry, phongMaterial); 
@@ -163,11 +182,20 @@ function createFloor() {
     'use strict';
 
     floor = new THREE.Object3D();
+
+    let floorTexture = new THREE.TextureLoader().load('images/floor.jpg');
+    floorTexture.wrapS = THREE.RepeatWrapping;
+    floorTexture.wrapT = THREE.RepeatWrapping;
+    floorTexture.repeat.set(1.5 * scale, 1.5 * scale);
+
+    let floorBumpMap = new THREE.TextureLoader().load('images/floorBump.jpg');
+    floorBumpMap.wrapS = THREE.RepeatWrapping;
+    floorBumpMap.wrapT = THREE.RepeatWrapping;
     
     // Gouraud Shading
-    let lambertMaterial = new THREE.MeshLambertMaterial({ color: 0x711324, wireframe: false });
+    let lambertMaterial = new THREE.MeshLambertMaterial({ map: floorTexture, bumpMap: floorBumpMap, bumpScale: 0.1, color: 0xf8baba, wireframe: false });
     // Phong Shading
-    let phongMaterial = new THREE.MeshPhongMaterial({ color: 0x711324, wireframe: false });
+    let phongMaterial = new THREE.MeshPhongMaterial({ map: floorTexture, bumpMap: floorBumpMap, bumpScale: 0.1, color: 0xf8baba, wireframe: false });
 
     let geometry = new THREE.PlaneGeometry(floorWidth * scale, floorLength * scale, 10, 10);
     let mesh = new THREE.Mesh(geometry, phongMaterial); 
@@ -197,12 +225,10 @@ function createOrigami1() {
 
     origami1 = new THREE.Object3D();
 
-    //const texture = new THREE.TextureLoader().load('flowers.png'); // { map: texture, ... }
-
     // Gouraud Shading
-    let lambertMaterial = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let lambertMaterial = new THREE.MeshLambertMaterial({ map: origamiTexture, color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
     // Phong Shading
-    let phongMaterial = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let phongMaterial = new THREE.MeshPhongMaterial({ map: origamiTexture, color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
 
     // Inner Degree of Paper 157.5 Degrees (14 * Math.PI / 16 Rad)
     const vertices = new Float32Array([
@@ -235,10 +261,10 @@ function createOrigami2() {
     origami2 = new THREE.Object3D();
 
     // Gouraud Shading
-    let lambertMaterialFront = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let lambertMaterialFront = new THREE.MeshLambertMaterial({ map: origamiTexture, color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
     let lambertMaterialBack = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
     // Phong Shading
-    let phongMaterialFront = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let phongMaterialFront = new THREE.MeshPhongMaterial({ map: origamiTexture, color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
     let phongMaterialBack = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
 
     // Inner Degree of Paper 157.5 Degrees (14 * Math.PI / 16 Rad)
@@ -299,10 +325,10 @@ function createOrigami3() {
     origami3 = new THREE.Object3D();
 
     // Gouraud Shading
-    let lambertMaterialFront = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let lambertMaterialFront = new THREE.MeshLambertMaterial({ map: origamiTexture, color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
     let lambertMaterialBack = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
     // Phong Shading
-    let phongMaterialFront = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let phongMaterialFront = new THREE.MeshPhongMaterial({ map: origamiTexture, color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
     let phongMaterialBack = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
 
     const verticesFront = new Float32Array([
@@ -409,6 +435,11 @@ function createOrigami3() {
 function createOrigamis() {
     'use strict';
 
+    origamiTexture = new THREE.TextureLoader().load('images/flowers.png');
+    origamiTexture.wrapS = THREE.RepeatWrapping;
+    origamiTexture.wrapT = THREE.RepeatWrapping;
+    origamiTexture.repeat.set(0.1 * scale, 0.1 * scale);
+
     createOrigami1();
     createOrigami2();
     createOrigami3();
@@ -466,7 +497,7 @@ function onResize() {
 
     if (window.innerHeight > 0 && window.innerWidth > 0) {
         if (camera == perspCam) {
-            camera.aspect = renderer.getSize().width / renderer.getSize().height;
+            camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
         }
         else {
@@ -523,7 +554,7 @@ function drawPauseScreen() {
     pauseScreen = new THREE.Object3D();
     let geometry = new THREE.PlaneGeometry(pauseScreenWidth * scale, pauseScreenLength * scale, 10, 10);
 
-    const texture = new THREE.TextureLoader().load('pause.png');
+    const texture = new THREE.TextureLoader().load('images/pause.png');
     let material = new THREE.MeshBasicMaterial({ map: texture, color: 0xffffff, wireframe: false, side: THREE.DoubleSide, transparent: true, opacity: 0.4});
     let mesh = new THREE.Mesh(geometry, material);
     
@@ -594,39 +625,39 @@ function onKeyDown(e) {
             break;
 
         case 81: // Q
-        case 113: // q, Rotate Origami 1 Positively
-            if (origami1.userData.rotating == 0) {
-                origami1.userData.rotating = rotationFactor;
+        case 113: // q, Rotate Origami 1 Negatively
+            if (origami1.userData.rotating == 0 && !isPause) {
+                origami1.userData.rotating = -rotationFactor;
             } 
             break;
         case 87: // W
-        case 119: // w, Rotate Origami 1 Negatively
-            if (origami1.userData.rotating == 0) {
-                origami1.userData.rotating = -rotationFactor;
+        case 119: // w, Rotate Origami 1 Positively
+            if (origami1.userData.rotating == 0 && !isPause) {
+                origami1.userData.rotating = rotationFactor;
             }
             break;
         case 69: // E
-        case 101: // e, Rotate Origami 2 Positively
-            if (origami2.userData.rotating == 0) {
-                origami2.userData.rotating = rotationFactor;
-            }
-            break;
-        case 82: // R
-        case 114: // r, Rotate Origami 2 Negatively
-            if (origami2.userData.rotating == 0) {
+        case 101: // e, Rotate Origami 2 Negatively
+            if (origami2.userData.rotating == 0 && !isPause) {
                 origami2.userData.rotating = -rotationFactor;
             }
             break;
+        case 82: // R
+        case 114: // r, Rotate Origami 2 Positively
+            if (origami2.userData.rotating == 0 && !isPause) {
+                origami2.userData.rotating = rotationFactor;
+            }
+            break;
         case 84: // T
-        case 116: // t, Rotate Origami 3 Positively
-            if (origami3.userData.rotating == 0) {
-                origami3.userData.rotating = rotationFactor;
+        case 116: // t, Rotate Origami 3 Negatively
+            if (origami3.userData.rotating == 0 && !isPause) {
+                origami3.userData.rotating = -rotationFactor;
             }
             break;
         case 89: // Y
-        case 121: // y, Rotate Origami 3 Negatively
-            if (origami3.userData.rotating == 0) {
-                origami3.userData.rotating = -rotationFactor;
+        case 121: // y, Rotate Origami 3 Positively
+            if (origami3.userData.rotating == 0 && !isPause) {
+                origami3.userData.rotating = rotationFactor;
             }
             break;
     }
