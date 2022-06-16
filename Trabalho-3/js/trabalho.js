@@ -2,7 +2,7 @@
 
 import { VRButton } from './VRButton.js';
 
-var orthoCam, perspCam, pauseCamera, camera, lastCamera, dirLight, dirLightHelper, spotLight1, spotLight2, spotLight3, spotLightHelper1, spotLightHelper2, spotLightHelper3;
+var orthoCam, perspCam, pauseCamera, camera, dirLight, dirLightHelper, spotLight1, spotLight2, spotLight3, spotLightHelper1, spotLightHelper2, spotLightHelper3;
 var origamiTexture;
 
 var scene, renderer, isPause, isPhong;
@@ -16,7 +16,7 @@ var spotlight1, spotlight2, spotlight3, floor, stage, steps, origami1, origami2,
 const spotlightBase = 2, spotlightHeight = 2, floorWidth = 80, floorLength = 50, stageWidth = 60, stageHeight = 7, stageLength = 25, stepDepth = 2, paperLength = 7, offset = 1, pauseScreenWidth = 120, pauseScreenLength = 60;
 
 // Constants
-const scale = 1, perspCamX = 0, perspCamY = 40, perspCamZ = 40, orthoCamX = 0, orthoCamY = 0, orthoCamZ = (floorWidth * 5), pauseCameraX = 0, pauseCameraY = 90, pauseCameraZ = - orthoCamZ;
+const scale = 1, perspCamX = 0, perspCamY = 40, perspCamZ = 40, orthoCamX = 0, orthoCamY = 0, orthoCamZ = (floorWidth * 5), pauseCameraX = orthoCamX, pauseCameraY = orthoCamY, pauseCameraZ = -orthoCamZ;
 
 const rotationFactor = 1;
 
@@ -558,11 +558,11 @@ function drawPauseScreen() {
     let material = new THREE.MeshBasicMaterial({ map: texture, color: 0xffffff, wireframe: false ,transparent: true, opacity: 0.8 });
     let mesh = new THREE.Mesh(geometry, material);
     
-    pauseScreen.rotateY(Math.PI);
-    pauseScreen.position.set(pauseCameraX, pauseCameraY, pauseCameraZ + 10);
-    
-    pauseScreen.visible = false;
     pauseScreen.add(mesh);
+    pauseScreen.rotateY(Math.PI);
+    pauseScreen.position.set(pauseCameraX * scale, (pauseCameraY + 7) * scale, (pauseCameraZ + 7) * scale);
+    pauseScreen.visible = false;
+
     scene.add(pauseScreen);
 }
 
@@ -571,20 +571,6 @@ function activatePauseScreen() {
 
     isPause = true;
     pauseScreen.visible = true;
-    
-    if (lastCamera = perspCam) {
-        pauseScreen.position.x = perspCamX * scale;
-        pauseScreen.position.y = (perspCamY - 40) * scale;
-        pauseScreen.position.z = (perspCamZ - 1) * scale;
-        pauseScreen.lookAt(scene.position);
-    }
-    else {
-        pauseScreen.position.x = orthoCamX * scale;
-        pauseScreen.position.y = (orthoCamY - 40) * scale;
-        pauseScreen.position.z = (orthoCamZ - 1) * scale;
-        pauseScreen.lookAt(scene.position);
-        pauseScreen.position.y += stageHeight * scale;
-    }
 }
 
 function removePauseScreen() {
@@ -599,10 +585,10 @@ function onKeyDown(e) {
 
     switch(e.keyCode) {
         case 49: //1, Persp Camera
-            if(!isPause) camera = perspCam;
+            camera = perspCam;
             break;
         case 50: //2, Orthographic Fixed Camera
-            if(!isPause) camera = orthoCam;
+            camera = orthoCam;
             break;
             
         case 51: //3, Refresh
@@ -769,5 +755,3 @@ export function init() {
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
 }
-
-window.init = init;
