@@ -12,7 +12,7 @@ var clock, delta;
 var spotlight1, spotlight2, spotlight3, floor, stage, steps, origami1, origami2, origami3, pauseScreen;
 
 // Objects Scales
-const spotlightBase = 2, spotlightHeight = 2, floorWidth = 80, floorLength = 50, stageWidth = 60, stageHeight = 7, stageLength = 25, stepDepth = 2, paperLength = 7, offset = 1, pauseScreenWidth = 90, pauseScreenLength = 80;
+const spotlightBase = 2, spotlightHeight = 2, floorWidth = 80, floorLength = 50, stageWidth = 60, stageHeight = 7, stageLength = 25, stepDepth = 2, paperLength = 7, offset = 1, pauseScreenWidth = 130, pauseScreenLength = 90;
 
 // Constants
 const scale = 1, perspCamX = 0, perspCamY = 40, perspCamZ = 40, orthoCamX = 0, orthoCamY = 0, orthoCamZ = (floorWidth * 5), pauseCameraX = 0, pauseCameraY = 90, pauseCameraZ = - orthoCamZ;
@@ -96,7 +96,7 @@ function createLights() {
     'use strict';
 
     // Directional Light
-    dirLight = new THREE.DirectionalLight(0xffffff, 2);
+    dirLight = new THREE.DirectionalLight(0xffffff, 1);
     dirLight.position.set(20 * scale, 40 * scale, 20 * scale);
     dirLight.target.position.set(0, stageHeight * scale, 0);
     dirLightHelper = new THREE.DirectionalLightHelper(dirLight);
@@ -181,29 +181,13 @@ function createFloor() {
     scene.add(floor);
 }
 
-function createTriangle(v1, v2, v3) {
-    let geometry = new THREE.Geometry(); 
+function createTriangles(vertices) {
+    let geometry = new THREE.BufferGeometry();
 
-    geometry.vertices.push(v1);
-    geometry.vertices.push(v2);
-    geometry.vertices.push(v3);
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setAttribute('uv', new THREE.BufferAttribute(vertices, 3));
 
-    geometry.faces.push(new THREE.Face3(0, 1, 2));
-    geometry.computeFaceNormals();
-
-   return geometry;
-}
-
-function createSquare(v1, v2, v3, v4) {
-    let geometry = new THREE.Geometry(); 
-
-    geometry.vertices.push(v1);
-    geometry.vertices.push(v2);
-    geometry.vertices.push(v3);
-    geometry.vertices.push(v4);
-
-    geometry.faces.push(new THREE.Face4(0, 1, 2, 3));
-    geometry.computeFaceNormals();
+    geometry.computeVertexNormals();
 
    return geometry;
 }
@@ -216,23 +200,30 @@ function createOrigami1() {
     //const texture = new THREE.TextureLoader().load('flowers.png'); // { map: texture, ... }
 
     // Gouraud Shading
-    let lambertMaterialRight = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialLeft = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let lambertMaterial = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
     // Phong Shading
-    let phongMaterialRight = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialLeft = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let phongMaterial = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
 
     // Inner Degree of Paper 157.5 Degrees (14 * Math.PI / 16 Rad)
-    let geometryRight = createTriangle(new THREE.Vector3(0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(0, (Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(-4.82 * scale, 0, 1.37 * scale));
-    let meshRight = new THREE.Mesh(geometryRight, phongMaterialRight); 
+    const vertices = new Float32Array([
+        // Right
+        0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0,
+        0, (Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0,
+        -4.82 * scale, 0, 1.37 * scale,
 
-    let geometryLeft = createTriangle(new THREE.Vector3(0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(0, (Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(4.82 * scale, 0, 1.37 * scale));
-    let meshLeft = new THREE.Mesh(geometryLeft, phongMaterialLeft); 
+        // Left
+        0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0,
+        0, (Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0,
+        4.82 * scale, 0, 1.37 * scale
+    ]);
+    let geometry = createTriangles(vertices);
+    let mesh = new THREE.Mesh(geometry, phongMaterial);
+    mesh.receiveShadow = true;
+    mesh.castShadow = true; 
 
-    origami1.userData = {altMaterial: [lambertMaterialRight, lambertMaterialLeft], mesh: [meshRight, meshLeft], rotating: 0};
+    origami1.userData = {altMaterial: [lambertMaterial], mesh: [mesh], rotating: 0};
     
-    origami1.add(meshRight);
-    origami1.add(meshLeft);
+    origami1.add(mesh);
     origami1.position.set(-(stageWidth / 3) * scale, (stageHeight + Math.sqrt(2 * (paperLength ** 2)) / 2 + offset) * scale, 0);
 
     scene.add(origami1);
@@ -244,232 +235,172 @@ function createOrigami2() {
     origami2 = new THREE.Object3D();
 
     // Gouraud Shading
-    let lambertMaterialTopRight = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialTopLeft = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialMidRight = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialMidLeft = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialBotRight = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialBotLeft = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let lambertMaterialFront = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let lambertMaterialBack = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
     // Phong Shading
-    let phongMaterialTopRight = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialTopLeft = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialMidRight = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialMidLeft = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialBotRight = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialBotLeft = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let phongMaterialFront = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let phongMaterialBack = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
 
     // Inner Degree of Paper 157.5 Degrees (14 * Math.PI / 16 Rad)
-    let geometryTopRight = createTriangle(new THREE.Vector3(0, (Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(1.61 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 1.65) * scale, -0.97 * scale));
-    let meshTopRight = new THREE.Mesh(geometryTopRight, phongMaterialTopRight); 
+    const verticesFront = new Float32Array([
+        // Top Right
+        0, (Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0,
+        0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0,
+        1.68 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 1.65) * scale, -0.32 * scale,
 
-    let geometryTopLeft = createTriangle(new THREE.Vector3(0, (Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0), new THREE.Vector3(-1.61 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 1.65) * scale, -0.97 * scale));
-    let meshTopLeft = new THREE.Mesh(geometryTopLeft, phongMaterialTopLeft);
+        // Top Left
+        0, (Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0,
+        0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0,
+        -1.68 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 1.65) * scale, -0.32 * scale,
 
-    let geometryMidRight = createTriangle(new THREE.Vector3(0.1 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.35) * scale, 0.89 * scale), new THREE.Vector3(1.61 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 1.65) * scale, -0.97 * scale), new THREE.Vector3(1.43 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.93) * scale, -0.82 * scale));
-    let meshMidRight = new THREE.Mesh(geometryMidRight, phongMaterialMidRight); 
+        // Bot Right
+        0.15 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.35) * scale, 0.28 * scale,
+        1.47 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.93) * scale, -0.29 * scale,
+        0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0,
 
-    let geometryMidLeft = createTriangle(new THREE.Vector3(-0.1 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.35) * scale, 0.89 * scale), new THREE.Vector3(-1.61 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 1.65) * scale, -0.97 * scale), new THREE.Vector3(-1.43 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.93) * scale, -0.82 * scale));
-    let meshMidLeft = new THREE.Mesh(geometryMidLeft, phongMaterialMidLeft); 
+        // Bot Left
+        -0.15 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.35) * scale, 0.28 * scale,
+        -1.47 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.93) * scale, -0.29 * scale,
+        0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0
+    ]);
+    let geometryFront = createTriangles(verticesFront);
+    let meshFront = new THREE.Mesh(geometryFront, phongMaterialFront);
+    meshFront.receiveShadow = true;
+    meshFront.castShadow = true; 
 
-    let geometryBotRight = createTriangle(new THREE.Vector3(0.1 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.35) * scale, 0.89 * scale), new THREE.Vector3(1.43 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.93) * scale, -0.82 * scale), new THREE.Vector3(0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0));
-    let meshBotRight = new THREE.Mesh(geometryBotRight, phongMaterialBotRight); 
+    const verticesBack = new Float32Array([
+        // Mid Right
+        0.15 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.35) * scale, 0.28 * scale,
+        1.68 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 1.65) * scale, -0.32 * scale,
+        1.47 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.93) * scale, -0.29 * scale,
 
-    let geometryBotLeft = createTriangle(new THREE.Vector3(-0.1 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.35) * scale, 0.89 * scale), new THREE.Vector3(-1.43 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.93) * scale, -0.82 * scale), new THREE.Vector3(0, -(Math.sqrt(2 * (paperLength ** 2)) / 2) * scale, 0));
-    let meshBotLeft = new THREE.Mesh(geometryBotLeft, phongMaterialBotLeft); 
+        // Mid Left
+        -0.15 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.35) * scale, 0.28 * scale,
+        -1.68 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 1.65) * scale, -0.32 * scale,
+        -1.47 * scale, (Math.sqrt(2 * (paperLength ** 2)) / 2 - 2.93) * scale, -0.29 * scale
+    ]);
+    let geometryBack = createTriangles(verticesBack);
+    let meshBack = new THREE.Mesh(geometryBack, phongMaterialBack);
+    meshBack.receiveShadow = true;
+    meshBack.castShadow = true; 
 
-    origami2.userData = {altMaterial: [lambertMaterialTopRight, lambertMaterialTopLeft, lambertMaterialMidRight, lambertMaterialMidLeft, lambertMaterialBotRight, lambertMaterialBotLeft], mesh: [meshTopRight, meshTopLeft, meshMidRight, meshMidLeft, meshBotRight, meshBotLeft], rotating: 0};
+    origami2.userData = {altMaterial: [lambertMaterialFront, lambertMaterialBack], mesh: [meshFront, meshBack], rotating: 0};
 
-    origami2.add(meshTopRight);
-    origami2.add(meshTopLeft);
-    origami2.add(meshMidRight);
-    origami2.add(meshMidLeft);
-    origami2.add(meshBotRight);
-    origami2.add(meshBotLeft);
+    origami2.add(meshFront);
+    origami2.add(meshBack);    
     origami2.position.set(0, (stageHeight + Math.sqrt(2 * (paperLength ** 2)) / 2 + offset) * scale, 0);
 
     scene.add(origami2);
-}
-
-function createOrigami3Tail(origami3) {
-    'use strict';
-
-    // Gouraud Shading
-    let lambertMaterialTail1Right = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialTail1Left = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialTail2Right = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialTail2Left = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    // Phong Shading
-    let phongMaterialTail1Right  = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialTail1Left = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialTail2Right  = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialTail2Left = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-
-    let geometryTail1Right = createTriangle(new THREE.Vector3(2.4 * scale, -1.38 * scale, 0), new THREE.Vector3(-2.4 * scale, -0.47 * scale, 0), new THREE.Vector3(1.63 * scale, -2.31 * scale, 0.43 * scale));
-    let meshTail1Right = new THREE.Mesh(geometryTail1Right, phongMaterialTail1Right);
-
-    let geometryTail1Left = createTriangle(new THREE.Vector3(-2.4 * scale, -0.47 * scale, 0), new THREE.Vector3(-1.1 * scale, -2.27 * scale, 0.63 * scale), new THREE.Vector3(1.63 * scale, -2.31 * scale, 0.43 * scale));
-    let meshTail1Left = new THREE.Mesh(geometryTail1Left, phongMaterialTail1Left);
-
-    let geometryTail2Right = createTriangle(new THREE.Vector3(2.4 * scale, -1.38 * scale, 0), new THREE.Vector3(-2.4 * scale, -0.47 * scale, 0), new THREE.Vector3(1.63 * scale, -2.31 * scale, -0.43 * scale));
-    let meshTail2Right = new THREE.Mesh(geometryTail2Right, phongMaterialTail2Right);
-
-    let geometryTail2Left = createTriangle(new THREE.Vector3(-2.4 * scale, -0.47 * scale, 0), new THREE.Vector3(-1.1 * scale, -2.27 * scale, -0.63 * scale), new THREE.Vector3(1.63 * scale, -2.31 * scale, -0.43 * scale));
-    let meshTail2Left = new THREE.Mesh(geometryTail2Left, phongMaterialTail2Left);
-
-    origami3.userData.altMaterial.push(lambertMaterialTail1Right);
-    origami3.userData.altMaterial.push(lambertMaterialTail1Left);
-    origami3.userData.altMaterial.push(lambertMaterialTail2Right);
-    origami3.userData.altMaterial.push(lambertMaterialTail2Left);
-    origami3.userData.mesh.push(meshTail1Right);
-    origami3.userData.mesh.push(meshTail1Left);
-    origami3.userData.mesh.push(meshTail2Right);
-    origami3.userData.mesh.push(meshTail2Left);
-    origami3.add(meshTail1Right);
-    origami3.add(meshTail1Left);
-    origami3.add(meshTail2Right);
-    origami3.add(meshTail2Left);
-}
-
-function createOrigami3Wings(origami3) {
-    'use strict';
-
-    // Gouraud Shading
-    let lambertMaterialWing1 = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialWing2 = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
-    // Phong Shading
-    let phongMaterialWing1 = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialWing2 = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
-
-    let geometryWing1 = createTriangle(new THREE.Vector3(-1.1 * scale, -2.27 * scale, 0.63 * scale), new THREE.Vector3(0.18 * scale, -2.29 * scale, 0.53 * scale), new THREE.Vector3(-0.14 * scale, -0.94 * scale, 0.46 * scale));
-    let meshWing1 = new THREE.Mesh(geometryWing1, phongMaterialWing1);
-
-    let geometryWing2 = createTriangle(new THREE.Vector3(-1.1 * scale, -2.27 * scale, -0.63 * scale), new THREE.Vector3(0.18 * scale, -2.29 * scale, -0.53 * scale), new THREE.Vector3(-0.14 * scale, -0.94 * scale, -0.46 * scale));
-    let meshWing2 = new THREE.Mesh(geometryWing2, phongMaterialWing2);
-
-    origami3.userData.altMaterial.push(lambertMaterialWing1);
-    origami3.userData.mesh.push(meshWing1);
-    origami3.userData.altMaterial.push(lambertMaterialWing2);
-    origami3.userData.mesh.push(meshWing2);
-    origami3.add(meshWing1);
-    origami3.add(meshWing2);
-}
-
-function createOrigami3Torso(origami3) {
-    'use strict';
-
-    // Gouraud Shading
-    let lambertMaterialTorso1Right = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialTorso1Left = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialTorso2Right = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialTorso2Left = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    // Phong Shading
-    let phongMaterialTorso1Right  = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialTorso1Left = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialTorso2Right  = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialTorso2Left = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-
-    let geometryTorso1Right = createTriangle(new THREE.Vector3(-0.14 * scale, -0.94 * scale, 0.46 * scale), new THREE.Vector3(1.63 * scale, -2.31 * scale, 0.43 * scale), new THREE.Vector3(2.4 * scale, -1.38 * scale, 0));
-    let meshTorso1Right = new THREE.Mesh(geometryTorso1Right, phongMaterialTorso1Right);
-
-    let geometryTorso1Left = createTriangle(new THREE.Vector3(0.18 * scale, -2.29 * scale, 0.53 * scale), new THREE.Vector3(-0.14 * scale, -0.94 * scale, 0.46 * scale), new THREE.Vector3(1.63 * scale, -2.31 * scale, 0.43 * scale));
-    let meshTorso1Left = new THREE.Mesh(geometryTorso1Left, phongMaterialTorso1Left);
-
-    let geometryTorso2Right = createTriangle(new THREE.Vector3(-0.14 * scale, -0.94 * scale, -0.46 * scale), new THREE.Vector3(1.63 * scale, -2.31 * scale, -0.43 * scale), new THREE.Vector3(2.4 * scale, -1.38 * scale, 0));
-    let meshTorso2Right = new THREE.Mesh(geometryTorso2Right, phongMaterialTorso2Right);
-
-    let geometryTorso2Left = createTriangle(new THREE.Vector3(0.18 * scale, -2.29 * scale, -0.53 * scale), new THREE.Vector3(-0.14 * scale, -0.94 * scale, -0.46 * scale), new THREE.Vector3(1.63 * scale, -2.31 * scale, -0.43 * scale));
-    let meshTorso2Left = new THREE.Mesh(geometryTorso2Left, phongMaterialTorso2Left);
-
-    origami3.userData.altMaterial.push(lambertMaterialTorso1Right);
-    origami3.userData.altMaterial.push(lambertMaterialTorso1Left);
-    origami3.userData.altMaterial.push(lambertMaterialTorso2Right);
-    origami3.userData.altMaterial.push(lambertMaterialTorso2Left);
-    origami3.userData.mesh.push(meshTorso1Right);
-    origami3.userData.mesh.push(meshTorso1Left);
-    origami3.userData.mesh.push(meshTorso2Right);
-    origami3.userData.mesh.push(meshTorso2Left);
-    origami3.add(meshTorso1Right);
-    origami3.add(meshTorso1Left);
-    origami3.add(meshTorso2Right);
-    origami3.add(meshTorso2Left);
-}
-
-function createOrigami3Neck(origami3) {
-    'use strict';
-
-    // Gouraud Shading
-    let lambertMaterialNeck1Right = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialNeck1Left = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialNeck2Right = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialNeck2Left = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    // Phong Shading
-    let phongMaterialNeck1Right  = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialNeck1Left = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialNeck2Right  = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialNeck2Left = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    
-    let geometryNeck1Right = createTriangle(new THREE.Vector3(1.63 * scale, -2.31 * scale, 0.43 * scale), new THREE.Vector3(2.4 * scale, -1.38 * scale, 0), new THREE.Vector3(1.3 * scale, 2.22 * scale, 0));
-    let meshNeck1Right = new THREE.Mesh(geometryNeck1Right, phongMaterialNeck1Right);
-    
-    let geometryNeck1Left = createTriangle(new THREE.Vector3(1.63 * scale, -2.31 * scale, 0.43 * scale), new THREE.Vector3(1.09 * scale, 2.22 * scale, 0.09 * scale), new THREE.Vector3(1.3 * scale, 2.22 * scale, 0));
-    let meshNeck1Left = new THREE.Mesh(geometryNeck1Left, phongMaterialNeck1Left);
-    
-    let geometryNeck2Right = createTriangle(new THREE.Vector3(1.63 * scale, -2.31 * scale, -0.43 * scale), new THREE.Vector3(2.4 * scale, -1.38 * scale, 0), new THREE.Vector3(1.3 * scale, 2.22 * scale, 0));
-    let meshNeck2Right = new THREE.Mesh(geometryNeck2Right, phongMaterialNeck2Right);
-    
-    let geometryNeck2Left = createTriangle(new THREE.Vector3(1.63 * scale, -2.31 * scale, -0.43 * scale), new THREE.Vector3(1.09 * scale, 2.22 * scale, -0.09 * scale), new THREE.Vector3(1.3 * scale, 2.22 * scale, 0));
-    let meshNeck2Left = new THREE.Mesh(geometryNeck2Left, phongMaterialNeck2Left);
-    
-    origami3.userData.altMaterial.push(lambertMaterialNeck1Right);
-    origami3.userData.altMaterial.push(lambertMaterialNeck1Left);
-    origami3.userData.altMaterial.push(lambertMaterialNeck2Right);
-    origami3.userData.altMaterial.push(lambertMaterialNeck2Left);
-    origami3.userData.mesh.push(meshNeck1Right);
-    origami3.userData.mesh.push(meshNeck1Left);
-    origami3.userData.mesh.push(meshNeck2Right);
-    origami3.userData.mesh.push(meshNeck2Left);
-    origami3.add(meshNeck1Right);
-    origami3.add(meshNeck1Left);
-    origami3.add(meshNeck2Right);
-    origami3.add(meshNeck2Left);
-}
-
-function createOrigami3Head(origami3) {
-    'use strict';
-
-    // Gouraud Shading
-    let lambertMaterialHead1 = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let lambertMaterialHead2 = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    // Phong Shading
-    let phongMaterialHead1 = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-    let phongMaterialHead2 = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
-
-    let geometryHead1 = createTriangle(new THREE.Vector3(1.09 * scale, 2.22 * scale, 0.09 * scale), new THREE.Vector3(2.17 * scale, 2.22 * scale, 0), new THREE.Vector3(1.3 * scale, 2.4 * scale, 0));
-    let meshHead1 = new THREE.Mesh(geometryHead1, phongMaterialHead1);
-
-    let geometryHead2 = createTriangle(new THREE.Vector3(1.09 * scale, 2.22 * scale, -0.09 * scale), new THREE.Vector3(2.17 * scale, 2.22 * scale, 0), new THREE.Vector3(1.3 * scale, 2.4 * scale, 0));
-    let meshHead2 = new THREE.Mesh(geometryHead2, phongMaterialHead2);
-
-    origami3.userData.altMaterial.push(lambertMaterialHead1);
-    origami3.userData.mesh.push(meshHead1);
-    origami3.userData.altMaterial.push(lambertMaterialHead2);
-    origami3.userData.mesh.push(meshHead2);
-    origami3.add(meshHead1);
-    origami3.add(meshHead2);
 }
 
 function createOrigami3() {
     'use strict';
 
     origami3 = new THREE.Object3D();
-    origami3.userData = {altMaterial: [], mesh: [], rotating: 0};
 
-    createOrigami3Tail(origami3);
-    createOrigami3Wings(origami3);
-    createOrigami3Torso(origami3);
-    createOrigami3Neck(origami3);
-    createOrigami3Head(origami3);
+    // Gouraud Shading
+    let lambertMaterialFront = new THREE.MeshLambertMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let lambertMaterialBack = new THREE.MeshLambertMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
+    // Phong Shading
+    let phongMaterialFront = new THREE.MeshPhongMaterial({ color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let phongMaterialBack = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
 
+    const verticesFront = new Float32Array([
+        // Tail 1 Right
+        2.4 * scale, -1.38 * scale, 0,
+        -2.4 * scale, -0.47 * scale, 0,
+        1.63 * scale, -2.31 * scale, 0.43 * scale,
+
+        // Tail 1 Left
+        -2.4 * scale, -0.47 * scale, 0,
+        -1.1 * scale, -2.27 * scale, 0.63 * scale,
+        1.63 * scale, -2.31 * scale, 0.43 * scale,
+
+        // Tail 2 Right
+        2.4 * scale, -1.38 * scale, 0,
+        -2.4 * scale, -0.47 * scale, 0,
+        1.63 * scale, -2.31 * scale, -0.43 * scale,
+
+        // Tail 2 Left
+        -2.4 * scale, -0.47 * scale, 0,
+        -1.1 * scale, -2.27 * scale, -0.63 * scale,
+        1.63 * scale, -2.31 * scale, -0.43 * scale,
+
+        // Torso 1 Right
+        -0.14 * scale, -0.94 * scale, 0.46 * scale,
+        1.63 * scale, -2.31 * scale, 0.43 * scale,
+        2.4 * scale, -1.38 * scale, 0,
+
+        // Torso 1 Left
+        0.18 * scale, -2.29 * scale, 0.53 * scale,
+        -0.14 * scale, -0.94 * scale, 0.46 * scale,
+        1.63 * scale, -2.31 * scale, 0.43 * scale,
+
+        // Torso 2 Right
+        -0.14 * scale, -0.94 * scale, -0.46 * scale,
+        1.63 * scale, -2.31 * scale, -0.43 * scale,
+        2.4 * scale, -1.38 * scale, 0,
+
+        // Torso 2 Left
+        0.18 * scale, -2.29 * scale, -0.53 * scale,
+        -0.14 * scale, -0.94 * scale, -0.46 * scale,
+        1.63 * scale, -2.31 * scale, -0.43 * scale,
+
+        // Neck 1 Right
+        1.63 * scale, -2.31 * scale, 0.43 * scale,
+        2.4 * scale, -1.38 * scale, 0,
+        1.3 * scale, 2.22 * scale, 0,
+
+        // Neck 1 Left
+        1.63 * scale, -2.31 * scale, 0.43 * scale,
+        1.09 * scale, 2.22 * scale, 0.09 * scale,
+        1.3 * scale, 2.22 * scale, 0,
+
+        // Neck 2 Right
+        1.63 * scale, -2.31 * scale, -0.43 * scale,
+        2.4 * scale, -1.38 * scale, 0,
+        1.3 * scale, 2.22 * scale, 0,
+
+        // Neck 2 Left
+        1.63 * scale, -2.31 * scale, -0.43 * scale,
+        1.09 * scale, 2.22 * scale, -0.09 * scale,
+        1.3 * scale, 2.22 * scale, 0,
+
+        // Head 1
+        1.09 * scale, 2.22 * scale, 0.09 * scale,
+        2.17 * scale, 2.22 * scale, 0,
+        1.3 * scale, 2.4 * scale, 0,
+
+        // Head 2
+        1.09 * scale, 2.22 * scale, -0.09 * scale,
+        2.17 * scale, 2.22 * scale, 0,
+        1.3 * scale, 2.4 * scale, 0
+    ]);
+    let geometryFront = createTriangles(verticesFront);
+    let meshFront = new THREE.Mesh(geometryFront, phongMaterialFront);
+    meshFront.receiveShadow = true;
+    meshFront.castShadow = true; 
+
+    const verticesBack = new Float32Array([
+        // Wing 1
+        -1.1 * scale, -2.27 * scale, 0.63 * scale,
+        0.18 * scale, -2.29 * scale, 0.53 * scale,
+        -0.14 * scale, -0.94 * scale, 0.46 * scale,
+
+        // Wing 2
+        -1.1 * scale, -2.27 * scale, -0.63 * scale,
+        0.18 * scale, -2.29 * scale, -0.53 * scale,
+        -0.14 * scale, -0.94 * scale, -0.46 * scale
+    ]);
+    let geometryBack = createTriangles(verticesBack);
+    let meshBack = new THREE.Mesh(geometryBack, phongMaterialBack);
+    meshBack.receiveShadow = true;
+    meshBack.castShadow = true; 
+
+    origami3.userData = {altMaterial: [lambertMaterialFront, lambertMaterialBack], mesh: [meshFront, meshBack], rotating: 0};
+
+    origami3.add(meshFront);
+    origami3.add(meshBack);    
     origami3.position.set((stageWidth / 3) * scale, (stageHeight + 2.4 + offset) * scale, 0);
 
     scene.add(origami3);
@@ -497,8 +428,8 @@ function createCameras() {
         window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000);
     orthoCam.zoom = 12 / scale;
     orthoCam.updateProjectionMatrix();
-    orthoCam.position.x = 0;
-    orthoCam.position.y = 0;
+    orthoCam.position.x = orthoCamX;
+    orthoCam.position.y = orthoCamY;
     orthoCam.position.z = orthoCamZ * scale;
     orthoCam.lookAt(scene.position);
     orthoCam.position.y += stageHeight * scale;
