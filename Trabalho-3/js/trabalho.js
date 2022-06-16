@@ -13,7 +13,7 @@ var clock, delta;
 var spotlight1, spotlight2, spotlight3, floor, stage, steps, origami1, origami2, origami3, pauseScreen;
 
 // Objects Scales
-const spotlightBase = 2, spotlightHeight = 2, floorWidth = 80, floorLength = 50, stageWidth = 60, stageHeight = 7, stageLength = 25, stepDepth = 2, paperLength = 7, offset = 1, pauseScreenWidth = 130, pauseScreenLength = 90;
+const spotlightBase = 2, spotlightHeight = 2, floorWidth = 80, floorLength = 50, stageWidth = 60, stageHeight = 7, stageLength = 25, stepDepth = 2, paperLength = 7, offset = 1, pauseScreenWidth = 120, pauseScreenLength = 60;
 
 // Constants
 const scale = 1, perspCamX = 0, perspCamY = 40, perspCamZ = 40, orthoCamX = 0, orthoCamY = 0, orthoCamZ = (floorWidth * 5), pauseCameraX = 0, pauseCameraY = 90, pauseCameraZ = - orthoCamZ;
@@ -555,7 +555,7 @@ function drawPauseScreen() {
     let geometry = new THREE.PlaneGeometry(pauseScreenWidth * scale, pauseScreenLength * scale, 10, 10);
 
     const texture = new THREE.TextureLoader().load('images/pause.png');
-    let material = new THREE.MeshBasicMaterial({ map: texture, color: 0xffffff, wireframe: false, side: THREE.DoubleSide, transparent: true, opacity: 0.4});
+    let material = new THREE.MeshBasicMaterial({ map: texture, color: 0xffffff, wireframe: false ,transparent: true, opacity: 0.8 });
     let mesh = new THREE.Mesh(geometry, material);
     
     pauseScreen.rotateY(Math.PI);
@@ -571,9 +571,20 @@ function activatePauseScreen() {
 
     isPause = true;
     pauseScreen.visible = true;
-
-    lastCamera = camera;
-    camera = pauseCamera;
+    
+    if (lastCamera = perspCam) {
+        pauseScreen.position.x = perspCamX * scale;
+        pauseScreen.position.y = (perspCamY - 40) * scale;
+        pauseScreen.position.z = (perspCamZ - 1) * scale;
+        pauseScreen.lookAt(scene.position);
+    }
+    else {
+        pauseScreen.position.x = orthoCamX * scale;
+        pauseScreen.position.y = (orthoCamY - 40) * scale;
+        pauseScreen.position.z = (orthoCamZ - 1) * scale;
+        pauseScreen.lookAt(scene.position);
+        pauseScreen.position.y += stageHeight * scale;
+    }
 }
 
 function removePauseScreen() {
@@ -581,8 +592,6 @@ function removePauseScreen() {
 
     isPause = false;
     pauseScreen.visible = false;
-
-    camera = lastCamera;
 }
 
 function onKeyDown(e) {
