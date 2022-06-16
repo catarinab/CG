@@ -49,6 +49,9 @@ function createSpotlights() {
         // Phong Shading
         let phongMaterialBase = new THREE.MeshPhongMaterial({ color: 0xfdf3c6, wireframe: false });
         let phongMaterialHead = new THREE.MeshPhongMaterial({ color: 0x242526, wireframe: false });
+        // No Shading
+        let basicMaterialBase = new THREE.MeshBasicMaterial({ color: 0xfdf3c6, wireframe: false });
+        let basicMaterialHead = new THREE.MeshBasicMaterial({ color: 0x242526, wireframe: false });
 
         let geometryBase = new THREE.SphereGeometry((spotlightBase / 2) * scale, 10 * scale, 10 * scale);
         let meshBase = new THREE.Mesh(geometryBase, phongMaterialBase); 
@@ -59,7 +62,7 @@ function createSpotlights() {
         meshHead.position.set(0, (spotlightBase / 2) * scale, 0);
         spotlight.add(meshHead);
 
-        spotlight.userData = {altMaterial: [lambertMaterialBase, lambertMaterialHead], mesh: [meshBase, meshHead]};
+        spotlight.userData = {altMaterial: [lambertMaterialBase, lambertMaterialHead], basicMaterial: [basicMaterialBase, basicMaterialHead], mesh: [meshBase, meshHead]};
         spotlight.rotateX(Math.PI / 6);
 
         if (i == 0) {
@@ -108,43 +111,37 @@ function createLights() {
     createSpotlights();
 }
 
-function createSteps() {
+function createFloor() {
     'use strict';
 
-    steps = new THREE.Object3D();
+    floor = new THREE.Object3D();
 
-    let stepsTexture = new THREE.TextureLoader().load('images/steps.jpg');
-    stepsTexture.wrapS = THREE.RepeatWrapping;
-    stepsTexture.wrapT = THREE.RepeatWrapping;
-    stepsTexture.repeat.set(5 * scale, 5 * scale);
+    let floorTexture = new THREE.TextureLoader().load('images/floor.jpg');
+    floorTexture.wrapS = THREE.RepeatWrapping;
+    floorTexture.wrapT = THREE.RepeatWrapping;
+    floorTexture.repeat.set(1.5 * scale, 1.5 * scale);
 
-    let stepsBumpMap = new THREE.TextureLoader().load('images/stepsBump.jpg');
-    stepsBumpMap.wrapS = THREE.RepeatWrapping;
-    stepsBumpMap.wrapT = THREE.RepeatWrapping;
+    let floorBumpMap = new THREE.TextureLoader().load('images/floorBump.jpg');
+    floorBumpMap.wrapS = THREE.RepeatWrapping;
+    floorBumpMap.wrapT = THREE.RepeatWrapping;
     
     // Gouraud Shading
-    let lambertMaterialBig = new THREE.MeshLambertMaterial({ map: stepsTexture, bumpMap: stepsBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
-    let lambertMaterialSmall = new THREE.MeshLambertMaterial({ map: stepsTexture, bumpMap: stepsBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
+    let lambertMaterial = new THREE.MeshLambertMaterial({ map: floorTexture, bumpMap: floorBumpMap, bumpScale: 0.1, color: 0xf8baba, wireframe: false });
     // Phong Shading
-    let phongMaterialBig = new THREE.MeshPhongMaterial({ map: stepsTexture, bumpMap: stepsBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
-    let phongMaterialSmall = new THREE.MeshPhongMaterial({ map: stepsTexture, bumpMap: stepsBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
+    let phongMaterial = new THREE.MeshPhongMaterial({ map: floorTexture, bumpMap: floorBumpMap, bumpScale: 0.1, color: 0xf8baba, wireframe: false });
+    // No Shading
+    let basicMaterial = new THREE.MeshBasicMaterial({ map: floorTexture, bumpMap: floorBumpMap, bumpScale: 0.1, color: 0xf8baba, wireframe: false });
 
-    let bigStepGeometry = new THREE.BoxGeometry(stageWidth * scale, (2 * stageHeight / 3) * scale, stepDepth * scale, 10, 10, 10);
-    let bigStepMesh = new THREE.Mesh(bigStepGeometry, phongMaterialBig); 
-    bigStepMesh.position.set(0, 0, 0);
+    let geometry = new THREE.PlaneGeometry(floorWidth * scale, floorLength * scale, 10, 10);
+    let mesh = new THREE.Mesh(geometry, phongMaterial); 
+    mesh.position.set(0, 0, 0);
+
+    floor.userData = {altMaterial: [lambertMaterial], basicMaterial: [basicMaterial], mesh: [mesh]};
     
-    let smallStepGeometry = new THREE.BoxGeometry(stageWidth, (stageHeight / 3) * scale, stepDepth * scale, 10, 10, 10);
-    let smallStepMesh = new THREE.Mesh(smallStepGeometry, phongMaterialSmall); 
-    smallStepMesh.position.set(0, - (stageHeight / 6) * scale, stepDepth * scale);
+    floor.add(mesh);
+    floor.rotateX(-Math.PI/2);
 
-    steps.userData = {altMaterial: [lambertMaterialBig, lambertMaterialSmall], mesh: [bigStepMesh, smallStepMesh]};
-
-    steps.add(smallStepMesh); 
-    steps.add(bigStepMesh);
-    steps.translateY((stageHeight / 3) * scale);
-    steps.translateZ((stageLength / 2 + stepDepth / 2) * scale);
-
-    scene.add(steps);
+    scene.add(floor);
 }
 
 function createStage() {
@@ -165,12 +162,14 @@ function createStage() {
     let lambertMaterial = new THREE.MeshLambertMaterial({ map: stageTexture, bumpMap: stageBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
     // Phong Shading
     let phongMaterial = new THREE.MeshPhongMaterial({ map: stageTexture, bumpMap: stageBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
+    // No Shading
+    let basicMaterial = new THREE.MeshBasicMaterial({ map: stageTexture, bumpMap: stageBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
 
     let geometry = new THREE.BoxGeometry(stageWidth * scale, stageHeight * scale, stageLength * scale, 10, 10, 10);
     let mesh = new THREE.Mesh(geometry, phongMaterial); 
     mesh.position.set(0, 0, 0);
 
-    stage.userData = {altMaterial: [lambertMaterial], mesh: [mesh]};
+    stage.userData = {altMaterial: [lambertMaterial], basicMaterial: [basicMaterial], mesh: [mesh]};
     
     stage.add(mesh);  
     stage.translateY(stageHeight/2 * scale);
@@ -178,35 +177,46 @@ function createStage() {
     scene.add(stage);
 }
 
-function createFloor() {
+function createSteps() {
     'use strict';
 
-    floor = new THREE.Object3D();
+    steps = new THREE.Object3D();
 
-    let floorTexture = new THREE.TextureLoader().load('images/floor.jpg');
-    floorTexture.wrapS = THREE.RepeatWrapping;
-    floorTexture.wrapT = THREE.RepeatWrapping;
-    floorTexture.repeat.set(1.5 * scale, 1.5 * scale);
+    let stepsTexture = new THREE.TextureLoader().load('images/steps.jpg');
+    stepsTexture.wrapS = THREE.RepeatWrapping;
+    stepsTexture.wrapT = THREE.RepeatWrapping;
+    stepsTexture.repeat.set(5 * scale, 5 * scale);
 
-    let floorBumpMap = new THREE.TextureLoader().load('images/floorBump.jpg');
-    floorBumpMap.wrapS = THREE.RepeatWrapping;
-    floorBumpMap.wrapT = THREE.RepeatWrapping;
+    let stepsBumpMap = new THREE.TextureLoader().load('images/stepsBump.jpg');
+    stepsBumpMap.wrapS = THREE.RepeatWrapping;
+    stepsBumpMap.wrapT = THREE.RepeatWrapping;
     
     // Gouraud Shading
-    let lambertMaterial = new THREE.MeshLambertMaterial({ map: floorTexture, bumpMap: floorBumpMap, bumpScale: 0.1, color: 0xf8baba, wireframe: false });
+    let lambertMaterialBig = new THREE.MeshLambertMaterial({ map: stepsTexture, bumpMap: stepsBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
+    let lambertMaterialSmall = new THREE.MeshLambertMaterial({ map: stepsTexture, bumpMap: stepsBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
     // Phong Shading
-    let phongMaterial = new THREE.MeshPhongMaterial({ map: floorTexture, bumpMap: floorBumpMap, bumpScale: 0.1, color: 0xf8baba, wireframe: false });
+    let phongMaterialBig = new THREE.MeshPhongMaterial({ map: stepsTexture, bumpMap: stepsBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
+    let phongMaterialSmall = new THREE.MeshPhongMaterial({ map: stepsTexture, bumpMap: stepsBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
+    // No Shading
+    let basicMaterialBig = new THREE.MeshBasicMaterial({ map: stepsTexture, bumpMap: stepsBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
+    let basicMaterialSmall = new THREE.MeshBasicMaterial({ map: stepsTexture, bumpMap: stepsBumpMap, bumpScale: 0.5, color: 0x55342b, wireframe: false });
 
-    let geometry = new THREE.PlaneGeometry(floorWidth * scale, floorLength * scale, 10, 10);
-    let mesh = new THREE.Mesh(geometry, phongMaterial); 
-    mesh.position.set(0, 0, 0);
-
-    floor.userData = {altMaterial: [lambertMaterial], mesh: [mesh]};
+    let bigStepGeometry = new THREE.BoxGeometry(stageWidth * scale, (2 * stageHeight / 3) * scale, stepDepth * scale, 10, 10, 10);
+    let bigStepMesh = new THREE.Mesh(bigStepGeometry, phongMaterialBig); 
+    bigStepMesh.position.set(0, 0, 0);
     
-    floor.add(mesh);
-    floor.rotateX(-Math.PI/2);
+    let smallStepGeometry = new THREE.BoxGeometry(stageWidth, (stageHeight / 3) * scale, stepDepth * scale, 10, 10, 10);
+    let smallStepMesh = new THREE.Mesh(smallStepGeometry, phongMaterialSmall); 
+    smallStepMesh.position.set(0, - (stageHeight / 6) * scale, stepDepth * scale);
 
-    scene.add(floor);
+    steps.userData = {altMaterial: [lambertMaterialBig, lambertMaterialSmall], basicMaterial: [basicMaterialBig, basicMaterialSmall], mesh: [bigStepMesh, smallStepMesh]};
+
+    steps.add(smallStepMesh); 
+    steps.add(bigStepMesh);
+    steps.translateY((stageHeight / 3) * scale);
+    steps.translateZ((stageLength / 2 + stepDepth / 2) * scale);
+
+    scene.add(steps);
 }
 
 function createTriangles(vertices) {
@@ -229,6 +239,8 @@ function createOrigami1() {
     let lambertMaterial = new THREE.MeshLambertMaterial({ map: origamiTexture, color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
     // Phong Shading
     let phongMaterial = new THREE.MeshPhongMaterial({ map: origamiTexture, color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    // No Shading
+    let basicMaterial = new THREE.MeshBasicMaterial({ map: origamiTexture, color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
 
     // Inner Degree of Paper 157.5 Degrees (14 * Math.PI / 16 Rad)
     const vertices = new Float32Array([
@@ -247,7 +259,7 @@ function createOrigami1() {
     mesh.receiveShadow = true;
     mesh.castShadow = true; 
 
-    origami1.userData = {altMaterial: [lambertMaterial], mesh: [mesh], rotating: 0};
+    origami1.userData = {altMaterial: [lambertMaterial], basicMaterial: [basicMaterial], mesh: [mesh], rotating: 0};
     
     origami1.add(mesh);
     origami1.position.set(-(stageWidth / 3) * scale, (stageHeight + Math.sqrt(2 * (paperLength ** 2)) / 2 + offset) * scale, 0);
@@ -266,6 +278,9 @@ function createOrigami2() {
     // Phong Shading
     let phongMaterialFront = new THREE.MeshPhongMaterial({ map: origamiTexture, color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
     let phongMaterialBack = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
+    // No Shading
+    let basicMaterialFront = new THREE.MeshBasicMaterial({ map: origamiTexture, color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let basicMaterialBack = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
 
     // Inner Degree of Paper 157.5 Degrees (14 * Math.PI / 16 Rad)
     const verticesFront = new Float32Array([
@@ -310,7 +325,7 @@ function createOrigami2() {
     meshBack.receiveShadow = true;
     meshBack.castShadow = true; 
 
-    origami2.userData = {altMaterial: [lambertMaterialFront, lambertMaterialBack], mesh: [meshFront, meshBack], rotating: 0};
+    origami2.userData = {altMaterial: [lambertMaterialFront, lambertMaterialBack], basicMaterial: [basicMaterialFront, basicMaterialBack], mesh: [meshFront, meshBack], rotating: 0};
 
     origami2.add(meshFront);
     origami2.add(meshBack);    
@@ -330,6 +345,9 @@ function createOrigami3() {
     // Phong Shading
     let phongMaterialFront = new THREE.MeshPhongMaterial({ map: origamiTexture, color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
     let phongMaterialBack = new THREE.MeshPhongMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
+    // No Shading
+    let basicMaterialFront = new THREE.MeshBasicMaterial({ map: origamiTexture, color: 0xda5e64, wireframe: false, side: THREE.DoubleSide });
+    let basicMaterialBack = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false, side: THREE.DoubleSide });
 
     const verticesFront = new Float32Array([
         // Tail 1 Right
@@ -423,7 +441,7 @@ function createOrigami3() {
     meshBack.receiveShadow = true;
     meshBack.castShadow = true; 
 
-    origami3.userData = {altMaterial: [lambertMaterialFront, lambertMaterialBack], mesh: [meshFront, meshBack], rotating: 0};
+    origami3.userData = {altMaterial: [lambertMaterialFront, lambertMaterialBack], basicMaterial: [basicMaterialFront, basicMaterialBack], mesh: [meshFront, meshBack], rotating: 0};
 
     origami3.add(meshFront);
     origami3.add(meshBack);    
@@ -443,6 +461,18 @@ function createOrigamis() {
     createOrigami1();
     createOrigami2();
     createOrigami3();
+}
+
+function createScene() {
+    'use strict';
+
+    scene = new THREE.Scene();
+    scene.add(new THREE.AxesHelper(10 * scale));
+
+    createFloor();
+    createStage();
+    createSteps();
+    createOrigamis();
 }
 
 function createCameras() {
@@ -478,16 +508,22 @@ function createCameras() {
     camera = perspCam;
 }
 
-function createScene() {
+function createPauseScreen() {
     'use strict';
 
-    scene = new THREE.Scene();
-    scene.add(new THREE.AxesHelper(10 * scale));
+    pauseScreen = new THREE.Object3D();
+    let geometry = new THREE.PlaneGeometry(pauseScreenWidth * scale, pauseScreenLength * scale, 10, 10);
 
-    createFloor();
-    createStage();
-    createSteps();
-    createOrigamis();
+    const texture = new THREE.TextureLoader().load('images/pause.png');
+    let material = new THREE.MeshBasicMaterial({ map: texture, color: 0xffffff, wireframe: false ,transparent: true, opacity: 0.4 });
+    let mesh = new THREE.Mesh(geometry, material);
+    
+    pauseScreen.add(mesh);
+    pauseScreen.rotateY(Math.PI);
+    pauseScreen.position.set(pauseCameraX * scale, (pauseCameraY + 7) * scale, (pauseCameraZ + 7) * scale);
+    pauseScreen.visible = false;
+
+    scene.add(pauseScreen);
 }
 
 function onResize() {
@@ -525,9 +561,26 @@ function alternateMaterials() {
     });
 }
 
+function basicMaterials() {
+    'use strict';
+
+    let objects = [floor, stage, steps, spotlight1, spotlight2, spotlight3, origami1, origami2, origami3];
+    objects.forEach(function (item1, index1) {
+        item1.userData.mesh.forEach(function (item2, index2) {
+            let auxMaterial = item1.userData.basicMaterial[index2];
+            item1.userData.basicMaterial[index2] = item2.material;
+            item2.material = auxMaterial;
+        });
+    });
+}
+
 function resetScene() {
     'use strict';
     
+    if (isPause) {
+        togglePauseScreen();
+    }
+
     // Reset Material
     if(!isPhong) alternateMaterials();
 
@@ -542,42 +595,15 @@ function resetScene() {
     spotLight2.visible = true;
     spotLight3.visible = true;
 
-
-    if (isPause) removePauseScreen();
-
     camera = perspCam;
 }
 
-function drawPauseScreen() {
+function togglePauseScreen() {
     'use strict';
 
-    pauseScreen = new THREE.Object3D();
-    let geometry = new THREE.PlaneGeometry(pauseScreenWidth * scale, pauseScreenLength * scale, 10, 10);
-
-    const texture = new THREE.TextureLoader().load('images/pause.png');
-    let material = new THREE.MeshBasicMaterial({ map: texture, color: 0xffffff, wireframe: false ,transparent: true, opacity: 0.8 });
-    let mesh = new THREE.Mesh(geometry, material);
-    
-    pauseScreen.add(mesh);
-    pauseScreen.rotateY(Math.PI);
-    pauseScreen.position.set(pauseCameraX * scale, (pauseCameraY + 7) * scale, (pauseCameraZ + 7) * scale);
-    pauseScreen.visible = false;
-
-    scene.add(pauseScreen);
-}
-
-function activatePauseScreen() {
-    'use strict';
-
-    isPause = true;
-    pauseScreen.visible = true;
-}
-
-function removePauseScreen() {
-    'use strict';
-
-    isPause = false;
-    pauseScreen.visible = false;
+    isPause = !isPause;
+    basicMaterials();
+    pauseScreen.visible = !pauseScreen.visible;
 }
 
 function onKeyDown(e) {
@@ -596,27 +622,26 @@ function onKeyDown(e) {
             break;
         case 65: // A
         case 97: // a, Alternate Materials
-            alternateMaterials();
+            if (!isPause) alternateMaterials();
             break;
         case 68: // D
         case 100: // d, Directional Light
-            dirLight.visible = !dirLight.visible;
+            if (!isPause) dirLight.visible = !dirLight.visible;
             break;
         case 32: //space, Pause
-            if (!isPause) activatePauseScreen();
-            else removePauseScreen();
+            togglePauseScreen();
             break;
         case 90: // Z
         case 122: // z, Spot Light 1
-            spotLight1.visible = !spotLight1.visible;
+            if (!isPause) spotLight1.visible = !spotLight1.visible;
             break;
         case 88: // X
         case 120: // X, Spot Light 2
-            spotLight2.visible = !spotLight2.visible;
+            if (!isPause) spotLight2.visible = !spotLight2.visible;
             break;
         case 67: // C
         case 99: // c, Spot Light 3
-            spotLight3.visible = !spotLight3.visible;
+            if (!isPause) spotLight3.visible = !spotLight3.visible;
             break;
 
         case 81: // Q
@@ -747,9 +772,9 @@ export function init() {
     createScene();
 
     createCameras();
-    initializeVR();
     createLights();
-    drawPauseScreen();
+    initializeVR();
+    createPauseScreen();
 
     window.addEventListener("resize", onResize);
     window.addEventListener("keydown", onKeyDown);
