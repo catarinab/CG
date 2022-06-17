@@ -28,18 +28,39 @@ function createSpotlights() {
             spotlight1 = new THREE.Object3D();
             spotlight = spotlight1;
             spotLight1 = new THREE.SpotLight(0xffffff, 2, Math.sqrt((2 * perspCamY / 3 - stageHeight) ** 2 + (stageLength / 2) ** 2) * scale, Math.PI / 8, 1, 0);
+
+            spotLight1.castShadow = true;
+            spotLight1.shadow.mapSize.width = 512;
+            spotLight1.shadow.mapSize.height = 512;
+            spotLight1.shadow.camera.near = 0.5;
+            spotLight1.shadow.camera.far = 500;
+
             spotLight = spotLight1;
         }
         else if (i == 1) {
             spotlight2 = new THREE.Object3D();
             spotlight = spotlight2;
             spotLight2 = new THREE.SpotLight(0xffffff, 2, Math.sqrt((2 * perspCamY / 3 - stageHeight) ** 2 + (stageLength / 2) ** 2) * scale, Math.PI / 8, 1, 0);
+
+            spotLight2.castShadow = true;
+            spotLight2.shadow.mapSize.width = 512;
+            spotLight2.shadow.mapSize.height = 512;
+            spotLight2.shadow.camera.near = 0.5;
+            spotLight2.shadow.camera.far = 500;
+
             spotLight = spotLight2;
         }
         else {
             spotlight3 = new THREE.Object3D();
             spotlight = spotlight3;
             spotLight3 = new THREE.SpotLight(0xffffff, 2, Math.sqrt((2 * perspCamY / 3 - stageHeight) ** 2 + (stageLength / 2) ** 2) * scale, Math.PI / 8, 1, 0);
+
+            spotLight3.castShadow = true;
+            spotLight3.shadow.mapSize.width = 512;
+            spotLight3.shadow.mapSize.height = 512;
+            spotLight3.shadow.camera.near = 0.5;
+            spotLight3.shadow.camera.far = 500;
+            
             spotLight = spotLight3;
         }
 
@@ -103,7 +124,15 @@ function createLights() {
     dirLight = new THREE.DirectionalLight(0xffffff, 2);
     dirLight.position.set(20 * scale, 40 * scale, 20 * scale);
     dirLight.target.position.set(0, stageHeight * scale, 0);
+    
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 512;
+    dirLight.shadow.mapSize.height = 512;
+    dirLight.shadow.camera.near = 0.5;
+    dirLight.shadow.camera.far = 500;
+
     dirLightHelper = new THREE.DirectionalLightHelper(dirLight);
+    
     scene.add(dirLight);
     scene.add(dirLightHelper);
 
@@ -148,6 +177,7 @@ function createStage() {
     'use strict';
 
     stage = new THREE.Object3D();
+    stage.receiveShadow = true;
 
     let stageTexture = new THREE.TextureLoader().load('images/stage.jpg');
     stageTexture.wrapS = THREE.RepeatWrapping;
@@ -506,7 +536,6 @@ function createCameras() {
     pauseCamera.position.y += stageHeight * scale;
 
     VRCamera = new THREE.StereoCamera();
-    scene.add(VRCamera);
 
     camera = perspCam;
 }
@@ -767,6 +796,8 @@ export function init() {
     isPhong = true;
     isPause = false;
     renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     renderer.setSize(window.innerWidth, window.innerHeight);
 
