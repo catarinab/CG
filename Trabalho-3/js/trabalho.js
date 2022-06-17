@@ -256,8 +256,6 @@ function createOrigami1() {
     ]);
     let geometry = createTriangles(vertices);
     let mesh = new THREE.Mesh(geometry, phongMaterial);
-    mesh.receiveShadow = true;
-    mesh.castShadow = true; 
 
     origami1.userData = {altMaterial: [lambertMaterial], basicMaterial: [basicMaterial], mesh: [mesh], rotating: 0};
     
@@ -306,8 +304,6 @@ function createOrigami2() {
     ]);
     let geometryFront = createTriangles(verticesFront);
     let meshFront = new THREE.Mesh(geometryFront, phongMaterialFront);
-    meshFront.receiveShadow = true;
-    meshFront.castShadow = true; 
 
     const verticesBack = new Float32Array([
         // Mid Right
@@ -322,8 +318,6 @@ function createOrigami2() {
     ]);
     let geometryBack = createTriangles(verticesBack);
     let meshBack = new THREE.Mesh(geometryBack, phongMaterialBack);
-    meshBack.receiveShadow = true;
-    meshBack.castShadow = true; 
 
     origami2.userData = {altMaterial: [lambertMaterialFront, lambertMaterialBack], basicMaterial: [basicMaterialFront, basicMaterialBack], mesh: [meshFront, meshBack], rotating: 0};
 
@@ -422,8 +416,6 @@ function createOrigami3() {
     ]);
     let geometryFront = createTriangles(verticesFront);
     let meshFront = new THREE.Mesh(geometryFront, phongMaterialFront);
-    meshFront.receiveShadow = true;
-    meshFront.castShadow = true; 
 
     const verticesBack = new Float32Array([
         // Wing 1
@@ -438,8 +430,6 @@ function createOrigami3() {
     ]);
     let geometryBack = createTriangles(verticesBack);
     let meshBack = new THREE.Mesh(geometryBack, phongMaterialBack);
-    meshBack.receiveShadow = true;
-    meshBack.castShadow = true; 
 
     origami3.userData = {altMaterial: [lambertMaterialFront, lambertMaterialBack], basicMaterial: [basicMaterialFront, basicMaterialBack], mesh: [meshFront, meshBack], rotating: 0};
 
@@ -506,7 +496,6 @@ function createCameras() {
     pauseCamera.position.y += stageHeight * scale;
 
     VRCamera = new THREE.StereoCamera();
-    scene.add(VRCamera);
 
     camera = perspCam;
 }
