@@ -2,7 +2,7 @@
 
 import { VRButton } from './VRButton.js';
 
-var orthoCam, perspCam, pauseCamera, camera, dirLight, dirLightHelper, spotLight1, spotLight2, spotLight3, spotLightHelper1, spotLightHelper2, spotLightHelper3;
+var orthoCam, perspCam, pauseCamera, VRCamera, camera, dirLight, dirLightHelper, spotLight1, spotLight2, spotLight3, spotLightHelper1, spotLightHelper2, spotLightHelper3;
 var origamiTexture;
 
 var scene, renderer, isPause, isPhong;
@@ -504,6 +504,9 @@ function createCameras() {
     pauseCamera.position.z = pauseCameraZ * scale;
     pauseCamera.lookAt(scene.position);
     pauseCamera.position.y += stageHeight * scale;
+
+    VRCamera = new THREE.StereoCamera();
+    scene.add(VRCamera);
 
     camera = perspCam;
 }
