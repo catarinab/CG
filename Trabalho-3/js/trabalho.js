@@ -5,7 +5,7 @@ import { VRButton } from './VRButton.js';
 var orthoCam, perspCam, pauseCamera, VRCamera, camera, dirLight, dirLightHelper, spotLight1, spotLight2, spotLight3, spotLightHelper1, spotLightHelper2, spotLightHelper3;
 var origamiTexture;
 
-var scene, renderer, isPause, isPhong;
+var scene, renderer, isPause, isPhong, isBasic;
 
 var clock, delta;
 
@@ -554,7 +554,8 @@ function alternateMaterials() {
 }
 
 function basicMaterials() {
-    'use strict';
+    'use strict';  
+    isBasic = !isBasic;
 
     let objects = [floor, stage, steps, spotlight1, spotlight2, spotlight3, origami1, origami2, origami3];
     objects.forEach(function (item1, index1) {
@@ -594,7 +595,6 @@ function togglePauseScreen() {
     'use strict';
 
     isPause = !isPause;
-    basicMaterials();
     pauseScreen.visible = !pauseScreen.visible;
 }
 
@@ -614,26 +614,29 @@ function onKeyDown(e) {
             break;
         case 65: // A
         case 97: // a, Alternate Materials
-            if (!isPause) alternateMaterials();
+            if (!isBasic) alternateMaterials();
             break;
         case 68: // D
         case 100: // d, Directional Light
-            if (!isPause) dirLight.visible = !dirLight.visible;
+            if (!isBasic) dirLight.visible = !dirLight.visible;
             break;
         case 32: //space, Pause
             togglePauseScreen();
             break;
+        case 83: //s, BasicMaterial
+            basicMaterials();
+            break;
         case 90: // Z
         case 122: // z, Spot Light 1
-            if (!isPause) spotLight1.visible = !spotLight1.visible;
+            if (!isBasic) spotLight1.visible = !spotLight1.visible;
             break;
         case 88: // X
         case 120: // X, Spot Light 2
-            if (!isPause) spotLight2.visible = !spotLight2.visible;
+            if (!isBasic) spotLight2.visible = !spotLight2.visible;
             break;
         case 67: // C
         case 99: // c, Spot Light 3
-            if (!isPause) spotLight3.visible = !spotLight3.visible;
+            if (!isBasic) spotLight3.visible = !spotLight3.visible;
             break;
 
         case 81: // Q
@@ -755,6 +758,7 @@ export function init() {
     
     isPhong = true;
     isPause = false;
+    isBasic = false;
     renderer = new THREE.WebGLRenderer({ antialias: true });
 
     renderer.setSize(window.innerWidth, window.innerHeight);
